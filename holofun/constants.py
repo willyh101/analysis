@@ -1,0 +1,7 @@
+# image size
+PX_PER_UM = 0.65
+UM_PER_PIX = 1.5
+
+# visual
+UM_PER_VIS_DEG_AZIMUTH = 20
+UM_PER_VIS_DEG_ALTITUDE = 40

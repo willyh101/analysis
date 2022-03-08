@@ -4,9 +4,6 @@ import warnings
 from pathlib import Path
 from datetime import datetime
 from typing import List  # depricated in >py3.9
-import json
-import sys
-from wsgiref.headers import tspecials
 
 import numpy as np
 import scipy

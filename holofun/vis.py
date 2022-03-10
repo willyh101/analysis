@@ -1,6 +1,7 @@
 import inspect
 import warnings
 import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as stats
 import scipy.optimize as sop
@@ -77,50 +78,6 @@ def pdir(df):
     pref_dir.name = 'pdir'
 
     return pref_dir
-
-# def odir(df):
-#     """Calculates ortho direction."""
-#     df = df.loc[df.ori  >= 0]
-#     ortho_dir = df.set_index('ori').groupby(['cell'])['df'].idxmin()
-#     ortho_dir.name = 'odir'
-    
-#     return ortho_dir
-
-# def osi(df):
-#     """
-#     Takes the mean df and calculates OSI.
-    
-#     Procedure:
-#         1. Drop gray screen conditions (orientation == -45)
-#         2. Subtract off the minimum cell by cell. Note: it is VERY important do this
-#            to avoid negative values giving extremely high or low OSIs. Do this before
-#            averaging the tuning curves otherwise you get lots of OSIs = 1 (if ortho is
-#            is min and set to zero, OSI will always be 1).
-#         3. Groupby cell and ori to get mean dataframe/tuning curve.
-#         4. Get PO and OO values and calculate OSI.
-    
-#     Returns a pd.Series of osi values
-    
-#     Confirmed working by WH 7/30/20
-#     BUT LIKE REALLY REALLY FOR SURE THIS TIME
-    
-#     """
-    
-#     vals = df.loc[df.ori  >= 0].copy()
-    
-#     # subtract off min for each cell
-#     # the groupby.transform will allow for broadcasting across each group
-#     # eg. it works as an inplace replacement of the values in 'df' to df.min()
-#     vals['df'] = vals['df'] - vals.groupby(['cell'])['df'].transform('min')
-        
-#     vals = vals.groupby(['cell', 'ori'], as_index=False).mean()
-
-#     po = vals.df[vals.pref == vals.ori].values
-#     oo = vals.df[vals.ortho == vals.ori].values
-#     osi = _osi(po, oo)
-#     osi = pd.Series(osi, name='osi')
-
-#     return osi
 
 def osi(df):
     """
@@ -227,31 +184,6 @@ def naka_rushton_allow_decreasing(c, a, b, c50, n):
         n = exponent
     """
     return (a*(c/c50)**n + b)/((c/c50)**n + 1)
-
-def fit_naka_rushton(c, r, constrain=True, **kwargs):
-    """
-    Fit the naka rushton to a constrast response curve. Simple implemtation for a 2D data set (eg.
-    single cell or average curve). Fits via nonlinear least squares. Will error if failure to fit.
-    Constrained to fit pyramidal cells with b=0.
-
-    Args:
-        c (array-like): contrast
-        r (array-like): response
-
-    Returns:
-        (a, b, c50, n) as a tuple
-    """
-    
-    bds = (
-        (0, 0, 0, 0),
-        (np.inf, 0.001, 100, 4)
-    )
-        
-    if constrain:
-        kwargs.setdefault('bounds', bds)
-        
-    popt, _ = sop.curve_fit(naka_rushton, c, r, **kwargs)
-    return popt
 
 class NakaRushton:
     """More flexible model class for fitting Naka-Rushtons to CRF datasets."""
@@ -372,6 +304,16 @@ class NakaRushton:
         return inspect.cleandoc(txt)
     
 def get_ret_data(data: np.ndarray, win:tuple, locs:np.ndarray):
+    """Proccess retinotopy PSTHs into responses by location.
+
+    Args:
+        data (np.ndarray): trialwise PSTHs
+        win (tuple): response window to take mean responses IN FRAMES
+        locs (np.ndarray): indices of xy locations of visual stimulus
+
+    Returns:
+        np.ndarray: cell x Y x X
+    """
     data_ = data[:,:,win[0]:win[1]]
     Ny = locs[:,0].max()
     Nx = locs[:,1].max()
@@ -381,8 +323,7 @@ def get_ret_data(data: np.ndarray, win:tuple, locs:np.ndarray):
             these_trials = (locs[:,0] == j+1) & (locs[:,1] == k+1)
             n_trials = these_trials.sum()
             for idx in np.where(these_trials)[0]:
-                ret[:,j,k] = ret[:,j,k] + data_[idx,:,:].mean(1)/n_trials # what is going on here? summing across mean of trials?
-                
+                ret[:,j,k] = ret[:,j,k] + data_[idx,:,:].mean(1)/n_trials # what is going on here? summing across mean of trials?            
     return ret
     
 class Retinotopy:
@@ -413,12 +354,10 @@ class Retinotopy:
         else:
             return self._fitfun
         
-    def calculate_grid(self, n=None):
-        if n is None:
-            n = self.gridsize
+    def calculate_grid(self, expand_by=1):
             
-        x_rng = np.arange(-(self.Nx-1)*self.gridsize/2, (self.Nx+1)*self.gridsize/2, n)
-        y_rng = np.arange(-(self.Ny-1)*self.gridsize/2, (self.Ny+1)*self.gridsize/2, n)
+        x_rng = np.linspace(-(self.Nx-1)*self.gridsize/2, (self.Nx-1)*self.gridsize/2, self.Nx*expand_by)
+        y_rng = np.linspace(-(self.Ny-1)*self.gridsize/2, (self.Ny-1)*self.gridsize/2, self.Ny*expand_by)
         
         xx,yy = np.meshgrid(x_rng, y_rng)
         
@@ -455,8 +394,8 @@ class Retinotopy:
         self.mse = mse((x, y), ret.ravel(), self.fitfun, self.popt)
         self.r2 = rsquared((x,y), ret.ravel(), self.fitfun, self.popt)
         
-    def predict(self, n=None):
-        x, y, sz = self.calculate_grid(n)
+    def predict(self, expand_by=1):
+        x, y, sz = self.calculate_grid(expand_by)
         resp = self.fitfun((x,y), *self.popt)
         return resp.reshape(sz)
     
@@ -489,6 +428,15 @@ class Retinotopy:
         ctr_x *= PX_PER_UM
         ctr_y *= PX_PER_UM
         return (ctr_x, ctr_y)
+
+    def plot(self, expand_by=1, ax=None):
+        if ax is None:
+            ax = plt.gca()
+
+        x, y, _ = self.calculate_grid(expand_by)
+        ret = self.predict(expand_by)
+        ext = (x.min(), x.max(), y.min(), y.max())
+        ax.imshow(ret, extent=ext)
         
     def info(self):
         print(self.__repr__())
@@ -513,7 +461,7 @@ class Retinotopy:
             Yo:      {self.yo:.5f}
             amp:     {self.a:.5f}
             sigma_x: {self.sigma_x:.5f}
-            sigma_y: {self.sigma_x:.5f}
+            sigma_y: {self.sigma_y:.5f}
             theta:   {self.theta:.5f}
             offset:  {self.offset:.5f}
             
@@ -552,3 +500,4 @@ class RetinotopyFOV(Retinotopy):
         # score
         self.sse = sumsquares((x,y), ret.ravel(), self.fitfun, self.popt)
         self.r2 = rsquared((x,y), ret.ravel(), self.fitfun, self.popt)
+        self.mse = mse((x, y), ret.ravel(), self.fitfun, self.popt)

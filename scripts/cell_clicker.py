@@ -6,16 +6,17 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import numpy as np
 
-MINMAX = (0,150)
+MINMAX = (0,250)
 CHANNEL = 'r'
-XSLICE = slice(106,394)
+XSLICE = slice(105,407)
 YSLICE = slice(0,512)
 
 
 def search_for_file_path():
     root = tkinter.Tk()
     root.withdraw()
-    base_dir = 'd:/frankenrig/experiments'
+    # base_dir = 'd:/frankenrig/experiments'
+    base_dir = 'f:/experiments'
     file_name = filedialog.askopenfilename(parent=root, initialdir=base_dir, 
                                            title='Select Image')
     return file_name

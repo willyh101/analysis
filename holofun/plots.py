@@ -2,7 +2,17 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 import matplotlib.font_manager as fm
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
+from .stats import sem
+
+def scatter2hist(x, y, bins=(10,10), ax=None, do_log=False):
+    """Generate a 2D histogram from scatter plot data. Bins can be int or tuple."""
+    if ax is None:
+        ax = plt.gca()
+    h, *_ = np.histogram2d(x, y, bins=bins)
+    if do_log:
+        h = np.log(h)
+    ax.imshow(np.rot90(h), interpolation='nearest')
+    return ax
 
 def traces_fill_plot(mm, err, ax=None):
     if ax is None:
@@ -26,46 +36,17 @@ def add_scalebar(ax, px_length, um_length):
                             fontproperties=fontprops)
     return scalebar
 
-def make_ticks_good(ax, psths, pre_time):
-    xticks = np.arange(-pre_time/6)
-    
-def stripplot(x, y, data, hue=None, dodge=None, xlabel=None, ylabel=None,
-                title=None, legend=None, strip_kws=None, point_kws=None, ax=None):
+def plot_mean_dff(trwise_data, ax=None, title=None):
     if ax is None:
-        ax = plt.gca()
-
-    common_opts = {
-        'x': x,
-        'y': y,
-        'data': data,
-        'hue': hue,
-        'dodge': dodge
-    }
-
-    if common_opts['hue'] and common_opts['dodge'] is None:
-        common_opts['dodge'] = 0.4
-
-    if strip_kws is None:
-        strip_kws = {}
-
-    strip_kws.setdefault('alpha', 0.5)
-    strip_kws.setdefault('zorder', 0)
-
-    if point_kws is None:
-        point_kws = {}
-
-    point_kws.setdefault('color', 'k')
-    point_kws.setdefault('join', False)
-    point_kws.setdefault('markers', '_')
-
-    g = sns.stripplot(**common_opts, **strip_kws, ax=ax)
-    sns.pointplot(ax=g, **common_opts, **point_kws)
-    g.axes.set_xlabel(xlabel)
-    g.axes.set_ylabel(ylabel)
-
-
-    if legend:
-        h, l = g.get_legend_handles_labels()
-        g.legend(h, legend, title='')
-
-    return g
+       fig, ax = plt.subplots(1,1, figsize=(4,4), constrained_layout=True)
+    
+    mm = trwise_data.mean(0).mean(0)
+    err = sem(trwise_data.mean(0), 0)
+    x = np.arange(mm.size)
+    
+    ax.plot(x,mm)
+    ax.fill_between(x, mm+err, mm-err, alpha=0.5)
+    ax.set_xlabel('Time (frames)')
+    ax.set_ylabel('$\Delta$F/F')
+    
+    return ax

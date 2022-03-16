@@ -1,48 +1,28 @@
-from .traces import min_subtract, rolling_baseline_dff, make_trialwise
+from .traces import min_subtract, rolling_baseline_dff, make_trialwise, baseline_subtract
+from .traces import cut_psths
 import scipy.stats as stats
 from .analysis import make_mean_df
 import pandas as pd
 from .vis import find_vis_resp, po, pdir, osi
 
-def baseline_and_zscore(raw_traces):
+def process_s2p(s2p, epoch, pre_time, total_time=None, do_zscore=False):
+    # get traces
+    raw_traces = s2p.cut_traces_epoch(epoch)
     traces = min_subtract(raw_traces)
-    traces_b = rolling_baseline_dff(traces)
-    traces_z = stats.zscore(traces_b, axis=1)
-    return traces_z
-
-def make_trialwise_traces(s2p_data, epoch):
-    raw_traces = s2p_data.cut_traces_epoch(epoch)
-    traces = baseline_and_zscore(raw_traces)
-    lengths = s2p_data.get_epoch_trial_lengths(epoch)
-    trialwise_data = make_trialwise(traces, lengths)
-    return trialwise_data
+    traces = rolling_baseline_dff(traces)
     
+    if do_zscore:
+        traces = stats.zscore(traces, axis=1)
 
-# def process_s2p_epoch(s2p_obj, epoch):
-#     # first, get traces
-#     traces = s2p_obj.cut_traces_epoch(epoch)
-#     traces_scored = baseline_and_zscore(traces)
+    # make trialwise
+    lengths = s2p.get_epoch_trial_lengths(epoch)
+    trwise = make_trialwise(traces, lengths)
+    trwise = baseline_subtract(trwise, pre_time)
     
-# class s2pEpoch:
-#     def __init__(self, s2p, epoch):
-#         self.s2p = s2p
-#         self.epoch = epoch
+    if total_time is not None:
+        trwise = cut_psths(trwise, total_time)
         
-#         self.raw_traces = s2p.cut_traces_epoch(epoch)
-        
-#     def baseline_and_zscore(self):
-#         traces = min_subtract(self.raw_traces)
-#         traces_b = rolling_baseline_dff(traces)
-#         traces_z = stats.zscore(traces_b, axis=1)
-#         return traces_z
-    
-#     def make_trialwise(self):
-        
-
-# def make_trialwise_aligned_df(traces, trial_lengths, stim_times, align_to, stims):
-#     trwise = make_trialwise(traces, trial_lengths)
-#     aligned = make_psths(trwise, stim_times, align_to)
-#     df = make_dataframe(aligned, fr, stims, )
+    return traces, trwise
 
 def ori_vis_pipeline(df, analysis_window):
     """

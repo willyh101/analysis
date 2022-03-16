@@ -11,14 +11,17 @@ from ScanImageTiffReader import ScanImageTiffReader
 # result_base = 'E:/functional connectivity'
 
 animalid = 'w42_2'
-date = '20220216'
-expt_ids = ['1', '2', '3', '5']
+date = '20220302'
+expt_ids = ['1', '2', '3', '4']
 
 
 result_base = 'E:/functional connectivity'
-tiff_base = 'D:/Frankenrig/Experiments/'
+# tiff_base = 'D:/Frankenrig/Experiments/'
+tiff_base = 'F:/experiments'
 
-diameter = 8
+diameter = 10
+
+cleanup_fask_disk = True
 
 default_ops = {
     # general
@@ -29,8 +32,8 @@ default_ops = {
     'tau': 1.0,
     
     # registration
-    'keep_movie_raw': False, # must be true for 2 step reg
-    'two_step_registration': False,
+    'keep_movie_raw': True, # must be true for 2 step reg
+    'two_step_registration': True,
     'nimg_init': 500, # subsampled frames for finding reference image
     'batch_size': 500, #2000, # number of frames per batch, default=500
     
@@ -69,7 +72,7 @@ def make_db(animalid, date, expt_ids, result_base, tiff_base):
 def process_data(ops, db):
     fast_disk = ops['fast_disk'] + '/suite2p'
     try:
-        shutil.rmtree(fast_disk + '/suite2p')
+        shutil.rmtree(fast_disk)
         print('fast disk contents deleted.')
     except:
         print('fast disk location empty.')
@@ -78,15 +81,14 @@ def process_data(ops, db):
     
     run_s2p(ops=ops,db=db)
     
-    print('emptying contents of temp fast disk folder...', end=' ')
-    
-    try:
-        shutil.rmtree(fast_disk + '/sute2p')
-        print('done.')
-        
-    except:
-        print('failed to clean up fast disk!')
-        
+    if cleanup_fask_disk:
+        print('emptying contents of temp fast disk folder...', end=' ')
+        try:
+            shutil.rmtree(fast_disk)
+            print('done.')
+        except:
+            print('failed to clean up fast disk!')
+            
     print('suite2p finished.')
 
 

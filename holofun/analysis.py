@@ -3,6 +3,8 @@ import scipy.stats as stats
 import pandas as pd
 from sklearn.neighbors import KDTree
 
+from holofun.constants import PX_PER_UM, UM_PER_PIX
+
 def make_mean_df(df, win, col):
     """
     Takes the mean by a condition in the data frame betweeen 2 timepoints and
@@ -125,3 +127,47 @@ def _increase_test_df(grp):
     else:
         p = 1
     return p
+
+def px2mu(d):
+    return d*UM_PER_PIX
+
+def mu2px(d):
+    return d*PX_PER_UM
+
+def get_targeted_cells(target_locs, cell_locs, threshold, verbose=True):
+    *_, is_match_target = coords2cells(target_locs, cell_locs, threshold)
+    target_matches = match_cells(cell_locs, target_locs, threshold)
+    targeted_cells = np.full_like(is_match_target, np.nan, dtype=float)
+    targeted_cells[is_match_target] = target_matches
+    
+    if verbose:
+        num_matches = np.count_nonzero(~np.isnan(targeted_cells))
+        num_cells = targeted_cells.size
+        target_matched_percent = num_matches/num_cells
+        print(f'Matched {target_matched_percent:.2%}% of cells ({num_matches}/{num_cells})')
+    return targeted_cells
+
+def get_holo_rois(targeted_cells, daq_roi_list, verbose=True):
+    holos = [targeted_cells[r-1] for r in daq_roi_list]
+    hfunc = lambda x: np.count_nonzero(~np.isnan(x))/len(x)
+    holo_match_percent = np.array(list(map(hfunc, holos)))
+    
+    if verbose:
+        mi = holo_match_percent.min()
+        mx = holo_match_percent.max()
+        mn = holo_match_percent.mean()
+        print(f'Holos on average matched {mn:.2%} of rois.')
+        print(f'Min = {mi:.2%}')
+        print(f'Max = {mx:.2%}')
+    return holos, holo_match_percent
+
+def off_targets_by_distance(s2p_locs, targ_locs, threshold=10):
+    """This only works if the planes are adjusted to real distance."""
+    off_target_risk = []
+    for loc in targ_locs:
+        plane = loc[2]
+        ds = np.linalg.norm(s2p_locs-loc, axis=1) < threshold
+        ps = s2p_locs[:,2] == plane
+        ot = np.where(ds & ps)[0]
+        off_target_risk.append(ot)
+    return np.concatenate(off_target_risk)

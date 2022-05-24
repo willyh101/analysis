@@ -17,12 +17,12 @@ def mse(x, y, func, popt):
     y_pred = func(x, *popt)
     return mean_squared_error(y, y_pred)
 
-def rsquared(x, y, func, popt):
-    return 1 - (sumsquares(x, y, func, popt)/total_sse(y))
-
 # def rsquared(x, y, func, popt):
-#     y_pred = func(x, *popt)
-#     return r2_score(y, y_pred)
+#     return 1 - (sumsquares(x, y, func, popt)/total_sse(y))
+
+def rsquared(x, y, func, popt):
+    y_pred = func(x, *popt)
+    return r2_score(y, y_pred)
 
 def gauss2d(xy, xo, yo, amplitude, sigma_x, sigma_y, theta, offset):
     x, y = xy

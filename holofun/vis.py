@@ -5,8 +5,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as stats
 import scipy.optimize as sop
+from tqdm import tqdm
+import time
 
-from .constants import PX_PER_UM, UM_PER_VIS_DEG_ALTITUDE, UM_PER_VIS_DEG_AZIMUTH, UM_PER_PIX
 from .stats import gauss2d, rsquared, sumsquares, mse
 from .utils import replace_tup_ix
 
@@ -398,36 +399,6 @@ class Retinotopy:
         x, y, sz = self.calculate_grid(expand_by)
         resp = self.fitfun((x,y), *self.popt)
         return resp.reshape(sz)
-    
-    def rf_in_mu(self):
-        """Returns azimuth, altitude (x,y)."""
-        if not self.is_fit:
-            raise ValueError('No fit data found.')
-        azimuth = self.sigma_x * UM_PER_VIS_DEG_AZIMUTH
-        altitude = self.sigma_y * UM_PER_VIS_DEG_ALTITUDE
-        return (azimuth, altitude)
-    
-    def rf_in_px(self):
-        """Returns azimuth, altitude (x,y)."""
-        azimuith, altitude = self.rf_in_mu()
-        azimuith *= PX_PER_UM
-        altitude *= PX_PER_UM
-        return (azimuith, altitude)
-    
-    def ctr_in_mu(self):
-        """From the center."""
-        if not self.is_fit:
-            raise ValueError('No fit data found.')
-        ctr_x = self.xo * UM_PER_VIS_DEG_AZIMUTH
-        ctr_y = self.yo * UM_PER_VIS_DEG_ALTITUDE
-        return (ctr_x, ctr_y)
-    
-    def ctr_in_px(self):
-        """From the center."""
-        ctr_x, ctr_y = self.ctr_in_mu()
-        ctr_x *= PX_PER_UM
-        ctr_y *= PX_PER_UM
-        return (ctr_x, ctr_y)
 
     def plot(self, expand_by=1, ax=None):
         if ax is None:
@@ -472,32 +443,64 @@ class Retinotopy:
             """
         return inspect.cleandoc(txt)
     
+def fit_all_ret(data, base_win, response_win, locinds, gridsize):
     
-class RetinotopyFOV(Retinotopy):
-    def __init__(self, Nx, Ny, gridsize) -> None:
-        super().__init__(Nx, Ny, gridsize)
-        self.is_fov = True
+    Ny = locinds[:,0].max()
+    Nx = locinds[:,1].max()
+
+    ret = get_ret_data(data, response_win, locinds)
+    
+    ncells = ret.shape[0]
+    ctr = np.full((ncells, 2), np.nan)
+    pvals = np.full(ncells, np.nan)
+    rvals = np.full(ncells, np.nan)
+    fit_ret = []
+    
+    for i,r in enumerate(tqdm(ret, desc='Fitting retinotopy: ')):
+        rfit = Retinotopy(Nx, Ny, gridsize)
         
-    def guess(self, ret):
-        x, y, sz = self.calculate_grid()
-        extremum = np.argmax(np.argmax(ret, axis=0))
-        p0 = (x[extremum], y[extremum], ret.max()-ret.min(), 10, 10, 0, np.maximum(0, ret.min()))
-        return p0
-        
-    def fit(self, ret: np.ndarray):
-        ncells = ret.shape[0]
-        x, y, sz = self.calculate_grid()
-        x = np.tile(x, ncells)
-        y = np.tile(y, ncells)
-        self.get_bounds()
-        p0 = self.guess(ret)
-        
-        # fit
-        self.popt, self.pcov = sop.curve_fit(gauss2d, (x,y), ret.ravel(), p0=p0, bounds=self.bds)
-        self.xo, self.yo, self.a, self.sigma_x, self.sigma_y, self.theta, self.offset = self.popt
-        self.is_fit = True
-        
-        # score
-        self.sse = sumsquares((x,y), ret.ravel(), self.fitfun, self.popt)
-        self.r2 = rsquared((x,y), ret.ravel(), self.fitfun, self.popt)
-        self.mse = mse((x, y), ret.ravel(), self.fitfun, self.popt)
+        try:
+            rfit.fit(r)
+            ff = rfit.predict()
+            fit_ret.append(ff)
+            ctr[i,:] = [rfit.xo, rfit.yo]
+            _,p = stats.ttest_rel(data[:,i,base_win[0]:base_win[1]].mean(1), 
+                                  data[:,i,response_win[0]:response_win[1]].mean(1))
+            pvals[i] = p
+            rvals[i] = rfit.r2
+            
+        except RuntimeError:
+            fit_ret.append(np.nan)
+            
+    out = {
+        'ctr': ctr,
+        'pvals': pvals,
+        'rvals': rvals,
+        'popts': fit_ret
+    }
+    time.sleep(2)
+    
+    return out
+
+def find_center_cells(ctr_rfs, ctr_sz=7, ctr_fov=(0,0)):
+    """
+    Finds cells aligned to the retinotopic center. Returns a boolean of center aligned cells.
+
+    Args:
+        ctr_rfs (np.ndarray): xy coordinates of fit receptive field centers. (cell x XY)
+        ctr_sz (tuple or int, optional): size of the center you want to select for. Defaults to 7.
+        ctr_fov (tuple, optional): location of the center in visual degrees. Defaults to (0,0).
+    """
+    
+    if isinstance(ctr_sz, int):
+        ctr_sz = (ctr_sz, ctr_sz)
+    
+    # find bbox
+    x = np.arange(ctr_fov[0]-ctr_sz[0], ctr_fov[0]+ctr_sz[0]+1)
+    y = np.arange(ctr_fov[1]-ctr_sz[0], ctr_fov[1]+ctr_sz[1]+1)
+    ll = np.array([x.min(), y.min()])
+    ur = np.array([x.max(), y.max()])
+    
+    ctr_cells = np.all((ll <= ctr_rfs) & (ctr_rfs <= ur), axis=1)
+    
+    return ctr_cells

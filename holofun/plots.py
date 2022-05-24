@@ -4,14 +4,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .stats import sem
 
-def scatter2hist(x, y, bins=(10,10), ax=None, do_log=False):
+def scatter2hist(x, y, bins=(10,10), ax=None, do_log=False, **kwargs):
     """Generate a 2D histogram from scatter plot data. Bins can be int or tuple."""
     if ax is None:
         ax = plt.gca()
     h, *_ = np.histogram2d(x, y, bins=bins)
     if do_log:
         h = np.log(h)
-    ax.imshow(np.rot90(h), interpolation='nearest')
+    ax.imshow(np.rot90(h), interpolation='nearest', **kwargs)
     return ax
     
 def plot_mean_dff(trwise_data, cells=None, trials=None, xvals=None, ax=None, **kwargs):

@@ -2,6 +2,8 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 import matplotlib.font_manager as fm
 import numpy as np
 import matplotlib.pyplot as plt
+
+from holofun.vis import Retinotopy
 from .stats import sem
 
 def scatter2hist(x, y, bins=(10,10), ax=None, do_log=False, **kwargs):
@@ -62,6 +64,42 @@ def plot_mean_dff_by_cell(trwise_data, cells=None, trials=None, xvals=None, ax=N
         ax.fill_between(x, m+e, m-e, alpha=0.5)
 
     return ax
+
+def plot_tc(d, cell, ax=None, **kwargs):
+    """Give a DataFrame and a cell number, plot the tuning curve."""
+    if ax is None:
+        fig, ax = plt.subplots(1,1, figsize=(3,3), constrained_layout=True)
+        
+    m = d[d.cell == cell].groupby('ori').mean()['df']
+    e = d[d.cell == cell].groupby('ori').sem()['df']
+    xs = d.ori.unique()
+    
+    lw = kwargs.setdefault('linewidth', 2)
+    
+    ax.errorbar(xs, m, e, linewidth=lw, **kwargs)
+    ax.set_ylabel('$\Delta$F/F')
+    ax.set_xticks(xs)
+    ax.set_xticklabels(xs, rotation=-45)
+    
+    return ax
+
+def plot_cell_ret(ret_data, ret_fit):
+    fig, ax = plt.subplots(1,3, figsize=(10,10))
+
+    x,y,_ = ret_fit.calculate_grid()
+    ext = (x.min(), x.max(), y.min(), y.max())
+    ax[0].imshow(ret_data, extent=ext)
+    ax[0].set_title('Data')
+    ret_fit.plot(ax=ax[1])
+    ax[1].set_title('Fit')
+    ax[2].set_title('Model')
+    ret_fit.plot(expand_by=100, ax=ax[2])
+
+    for a in ax:
+        a.axis('off')
+        
+    fig.subplots_adjust(wspace=.01, hspace=.01)
+    plt.show()
 
 # this might not be what I want exactly since you might want to adjust params based on how big
 # the source image is. this is made for an 8x8

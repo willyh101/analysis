@@ -39,6 +39,12 @@ def make_mov_array(tiff_list, zplane, ch=0, x_cut=slice(None), y_cut=slice(None)
     
     return mov_array, lengths
 
+def make_mean_movie(mov_array, tiff_lengths):
+    mov_cut = np.split(mov_array, np.cumsum(tiff_lengths[:-1]), axis=0)
+    shortest = min(map(lambda x: x.shape[0], mov_cut))
+    mmov = np.array([a[:shortest,:,:] for a in mov_cut]).mean(0)
+    return mmov
+
 def play_movie(mov, fps):
     update_ms = int((1/fps)*1000)
     

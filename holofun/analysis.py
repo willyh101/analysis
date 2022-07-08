@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.neighbors import KDTree
 
 from holofun.constants import PX_PER_UM, UM_PER_PIX
+from holofun.traces import df_add_cellwise
 
 def make_mean_df(df, win, col):
     """
@@ -171,3 +172,25 @@ def off_targets_by_distance(s2p_locs, targ_locs, threshold=10):
         ot = np.where(ds & ps)[0]
         off_target_risk.append(ot)
     return np.concatenate(off_target_risk)
+
+def subsample_trials(df: pd.DataFrame, frac=0.5, replace=False):
+    ntrials = df.trial.nunique()
+    nchoose = int(ntrials*frac)
+    sample1 = np.random.choice(df.trial.unique(), nchoose, replace=replace)
+    sample2 = df.loc[~df['trial'].isin(sample1), 'trial'].unique()
+    return sample1, sample2
+
+def subsample_df(df: pd.DataFrame, frac=0.5, replace=False):
+    ss = subsample_trials(df, frac, replace)
+    s1 = df[(df.trial.isin(ss[0]))]
+    s2 = df[(df.trial.isin(ss[1]))]
+    return s1, s2
+
+def split_and_corr_cells(df: pd.DataFrame, col: str, frac=0.5, replace=False):
+    """Split trials (same for all cells) and correlate mean responses."""
+    s1, s2 = subsample_df(df, frac, replace)
+    s1_means = s1.groupby(['cell', col]).mean()['df']
+    s2_means = s2.groupby(['cell', col]).mean()['df']
+    mrg = s1_means.to_frame().join(s2_means, rsuffix='2').reset_index()
+    corr_vals = mrg.groupby(['cell'])[['df','df2']].corr().iloc[0::2,-1].values
+    return corr_vals

@@ -150,6 +150,7 @@ def get_targeted_cells(target_locs, cell_locs, threshold, verbose=True):
 
 def get_holo_rois(targeted_cells, daq_roi_list, verbose=True):
     holos = [targeted_cells[r-1] for r in daq_roi_list]
+    holos = [np.array([h]) if isinstance(h, float) else h for h in holos]
     hfunc = lambda x: np.count_nonzero(~np.isnan(x))/len(x)
     holo_match_percent = np.array(list(map(hfunc, holos)))
     

@@ -55,7 +55,7 @@ def plot_mean_dff_by_cell(trwise_data, cells=None, trials=None, xvals=None, ax=N
     err = sem(trwise_data[mask], 0)
     
     if xvals is None:
-        x = np.arange(mm.size)
+        x = np.arange(mm.shape[-1])
     else:
         x = xvals
     

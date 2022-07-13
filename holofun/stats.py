@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score
 
-def sem(data, axis):
+def sem(data, axis=0):
     return data.std(axis)/np.sqrt(data.shape[axis])
 
 def sumsquares(x, y, func, popt):
@@ -34,3 +34,18 @@ def gauss2d(xy, xo, yo, amplitude, sigma_x, sigma_y, theta, offset):
     g = offset + amplitude*np.exp( - (a*((x-xo)**2) + 2*b*(x-xo)*(y-yo) 
                             + c*((y-yo)**2)))
     return g.ravel()
+
+def gauss2d_simple(xy, xo, yo, amplitude, sigma_x, sigma_y):
+    x, y = xy
+    xo = np.array(xo).astype(float)
+    yo = np.array(yo).astype(float)
+    a = ((x-xo)**2)/(2*sigma_x**2)
+    b = ((y-yo)**2)/(2*sigma_y**2)
+    g = amplitude * np.exp(-(a+b))
+    return g.ravel()
+
+def von_mises(x, kappa, mu, ht):
+    return (np.exp(kappa*np.cos(x-mu)) + ht*np.exp(kappa*np.cos(x-mu-np.pi)))/(np.exp(kappa) + ht*np.exp(-kappa))
+
+def von_mises_sym(x, kappa, offset, ampl):
+    return ampl * von_mises(x, kappa, 0, 1) + offset

@@ -10,60 +10,11 @@ from ScanImageTiffReader import ScanImageTiffReader
 from skimage import exposure
 from tqdm import tqdm
 
+from .constants import PX_PER_UM
+from .si_tiff import SItiffCore, get_tslice
 from .simple_guis import openfilegui
 
-
-class SItiff:
-    def __init__(self, path) -> None:
-        """
-        Loads a ScanImage tiff from the specified path.
-
-        Args:
-            path (str or Path): filepath to tiff
-        """
-        self.path = str(path)
-        
-        self.metadata = metadata_to_dict(self.path)
-        self.nchannels = self._get_nchannels()
-        self.zs = self._get_zs()
-        self.nplanes = len(self.zs)   
-        self.fr = self._eval_numeric_metadata('scanVolumeRate')
-        
-        with ScanImageTiffReader(self.path) as reader:
-            self.data = reader.data()
-    
-    def _eval_numeric_metadata(self, key):
-        return eval(self.metadata[key].replace(' ',',').replace(';',','))
-    
-    def _get_nchannels(self):
-        chans = self._eval_numeric_metadata('channelSave')
-        if isinstance(chans, int):
-            nchannels = 1
-        else:
-            nchannels = len(chans)
-        return nchannels
-    
-    def _get_zs(self):
-        zs = self._eval_numeric_metadata('zs')
-        if isinstance(zs, (int, float)):
-            zs = [zs]
-        return zs   
-    
-    def extract(self, z, ch):
-        """
-        Get the underlying data for a specified zplane and channel. 
-
-        Args:
-            z (int): Index of zplane to extract.
-            ch (int): Index of channel to extract. Use 0 for channel 1/green PMT, 1 for channel 2/red PMT.
-            
-        Returns:
-            nframes x N x N numpy array slice of data
-        """
-        tslice = get_tslice(z, ch, self.nchannels, self.nplanes)
-        img = self.data[tslice,:,:]
-        return img
-        
+class SItiff(SItiffCore):
         
     def mean_img(self, z_idx, channel, scaling=None, as_rgb=False, rgb_ch=None, blue_as_cyan=True):
         """
@@ -161,27 +112,6 @@ class SItiff:
             return
         print(f'Loading tiff: {path}')
         return cls(path)
-    
-    
-    
-    
-def metadata_to_dict(file):
-    """Read the SI metadata and turn in into a dict. Does not cast/eval values."""
-    
-    with ScanImageTiffReader(file) as reader:
-        meta = reader.metadata()
-    
-    # split at the new line marker
-    meta = meta.split('\n')
-    # filter out the ROI data by keeping fields that start with SI.
-    meta = list(filter(lambda x: 'SI.' in x, meta))
-    # make dictionary by splitting at equals, and only keep the last part of the fieldname as the key
-    d = {k.split('.')[-1]:v for k,v in (entry.split(' = ') for entry in meta)}
-    
-    return d
-
-def get_tslice(z_idx, ch_idx, nchannels, nplanes):
-    return slice((z_idx*nchannels)+ch_idx, None, nplanes*nchannels)
 
 def slice_movie(mov_path, x_slice, y_slice, t_slice) -> np.ndarray:
     """
@@ -249,3 +179,81 @@ def get_crop_mask(Cx, Cy, bb):
     ys = np.arange(Cy-bb, Cy+bb, dtype=int)
     mask = np.ix_(ys,xs)
     return mask
+
+def create_rgb_img(*args):
+    for arg in args:
+        if arg is not None:
+            rgb_im = np.zeros((*arg.shape, 3), dtype=np.uint8)
+    for i,img in enumerate(args):
+        if img is None:
+            continue
+        else:
+            img -= img.min()
+            new_img = exposure.rescale_intensity(img, out_range=np.uint8)
+            rgb_im[:,:,i] = new_img
+    return rgb_im
+
+class RGBImgViewer:
+    def __init__(self, *args):
+        if len(args) > 1 and len(args) < 4:
+            self.raw_data = create_rgb_img(*args)
+        elif len(args) == 1:
+            if len(args[0].shape) == 3:
+                assert args[0].shape == 3, 'Data must be (m,n,3) for single argument ndarry.'
+                self.raw_data = args[0]
+            else:
+                self.raw_data
+            self.raw_data = args[0]
+        self.img = self.raw_data.copy()
+    
+    def rescale(self, ch, upper=255, lower=0):
+        ch_data = self.raw_data[:,:,ch]
+        ch_data_adj = exposure.rescale_intensity(ch_data, (lower, upper))
+        self.img[:,:,ch] = ch_data_adj
+        
+    def reset(self):
+        self.img = self.raw_data.copy()
+        
+    def show(self, ch=None, ax=None):
+        if ax is None:
+            ax = plt.gca()
+        
+        if ch is not None:
+            rgb = self.img
+        else:
+            rgb = np.zeros_like(self.img)
+            rgb[:,:,ch] = self.img[:,:,ch]
+        
+        ax.imshow(rgb)
+        ax.axis('off')
+        
+def add_scalebar(ax, um_length, fs=18, lw=8, **kwargs):
+    px_length = um_length * PX_PER_UM
+    fontprops = fm.FontProperties(size=fs)
+    scalebar = AnchoredSizeBar(ax.transData, 
+                            px_length,
+                            f'{um_length} $\mu$m',
+                            'lower right',
+                            pad=0.2,
+                            borderpad=0.2,
+                            color='white',
+                            frameon=False,
+                            size_vertical=lw,
+                            fontproperties=fontprops, **kwargs)
+    ax.add_artist(scalebar)
+    return ax
+
+def add_label(ax, txt, c='white', sz=12, font_kw=None, pad=0.3, **kwargs):
+    font_dict = {
+        'size':sz,
+        'color': c
+    }
+    if font_kw is not None:
+        font_dict = {**font_kw}
+        
+    kwargs.setdefault('pad',pad)
+    kwargs.setdefault('borderpad', pad)
+    kwargs.setdefault('loc', 'upper left')
+    label = AnchoredText(txt, prop=font_dict, frameon=False, **kwargs)
+    ax.add_artist(label)
+    return ax

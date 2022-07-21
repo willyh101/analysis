@@ -372,6 +372,7 @@ class Retinotopy:
         x, y, sz = self.calculate_grid()
         lb = (x.min(), y.min(), 0, 0, 0, 0, 0)
         ub = (x.max(), y.max(), np.inf, x.max(), y.max(), 2*np.pi, np.inf)
+        ub = (x.max(), y.max(), np.inf, 20, 20, 2*np.pi, np.inf)
         self.bds = (lb, ub)
         
     def guess(self, ret):
@@ -476,7 +477,7 @@ def fit_all_ret(data, base_win, response_win, locinds, gridsize):
         'ctr': ctr,
         'pvals': pvals,
         'rvals': rvals,
-        'popts': fit_ret
+        'fits': fit_ret,
     }
     time.sleep(2)
     

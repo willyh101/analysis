@@ -100,18 +100,3 @@ def plot_cell_ret(ret_data, ret_fit):
         
     fig.subplots_adjust(wspace=.01, hspace=.01)
     plt.show()
-
-# this might not be what I want exactly since you might want to adjust params based on how big
-# the source image is. this is made for an 8x8
-def add_scalebar(ax, px_length, um_length):
-    fontprops = fm.FontProperties(size=18)
-    scalebar = AnchoredSizeBar(ax.transData, 
-                            px_length,
-                            f'{um_length} $\mu$m',
-                            'lower right',
-                            pad=0.2,
-                            color='white',
-                            frameon=False,
-                            size_vertical=8,
-                            fontproperties=fontprops)
-    return scalebar

@@ -1,7 +1,9 @@
 from pathlib import Path
+import platform
 import time
 import functools
 import os
+import logging
 
 def make_results_folder(root, mouse, date, folder_name='results', chdir=True):
     """
@@ -97,27 +99,67 @@ def nbsetup():
     try:
         if __IPYTHON__:
             get_ipython().magic('load_ext autoreload')
-            get_ipython().magic('autoreload 2')
+            get_ipython().magic('autoreload 3')
             get_ipython().magic("config InlineBackend.figure_format = 'retina'")
     except NameError:
         pass
     
-    import seaborn as sns
-    import matplotlib as mpl
-    import pandas as pd
-    
-    sns.set_style('ticks',{'axes.spines.right': False, 'axes.spines.top': False}) # removes annoying top and right axis
-    sns.set_context('notebook') # can change to paper, poster, talk, notebook
+    try:
+        import seaborn as sns
+        # sns.set_style('ticks',{'axes.spines.right': False, 'axes.spines.top': False}) # removes annoying top and right axis
+        # sns.set_context('notebook') # can change to paper, poster, talk, notebook
+    except ModuleNotFoundError:
+        # warnings.warn('Failed to import seaborn.')
+        logging.warning('Failed to import seaborn.')
+        
+    try:
+        import pandas as pd
+        pd.set_option('display.max_columns',10) # limits printing of dataframes
+    except ModuleNotFoundError:
+        logging.warning('Failed to import pandas.')
 
-    pd.set_option('display.max_columns',10) # limits printing of dataframes
-
-    mpl.rcParams['savefig.dpi'] = 600 # default resolution for saving images in matplotlib
-    mpl.rcParams['savefig.format'] = 'pdf' # defaults to png for saved images (SVG is best, however)
-    mpl.rcParams['savefig.bbox'] = 'tight' # so saved graphics don't get chopped
-    mpl.rcParams['image.cmap'] = 'viridis'
-    mpl.rcParams['ps.fonttype'] = 42
-    mpl.rcParams['savefig.transparent'] = True
-    mpl.rcParams['pdf.fonttype'] = 42
+    try:
+        import matplotlib as mpl
+        mpl.rcParams['savefig.dpi'] = 600 # default resolution for saving images in matplotlib
+        mpl.rcParams['savefig.format'] = 'pdf' # defaults to png for saved images (SVG is best, however)
+        mpl.rcParams['savefig.bbox'] = 'tight' # so saved graphics don't get chopped
+        mpl.rcParams['image.cmap'] = 'viridis'
+        mpl.rcParams['ps.fonttype'] = 42
+        mpl.rcParams['savefig.transparent'] = True
+        mpl.rcParams['pdf.fonttype'] = 42
+        # add to remove seaborn dependency
+        mpl.rcParams['axes.spines.top'] = False
+        mpl.rcParams['axes.spines.right'] = False
+        mpl.rcParams['font.size'] = 14
+        mpl.rcParams['figure.constrained_layout.use'] = True
+    except ModuleNotFoundError:
+        logging.warning('Failed to import matplotlib.')
 
 def flatten(t):
     return [item for sublist in t for item in sublist]
+
+def make_paths(mouse, date, result_base, tiff_base='f:/experiments', 
+               franken_drive='x', must_exist=True, keys=('srv', 'e', 'tiffs')):
+    
+    tiff_base = tiff_base.replace(':','').split('/')
+    
+    if platform.system() == 'Linux':
+        franken = Path('/mnt/franken')
+        edrive = Path('/mnt/e/', result_base, mouse, date)
+        tiff_path = Path('/mnt', *tiff_base, mouse, date)
+        
+    else:
+        franken = Path(franken_drive + ':/')
+        edrive = Path('e:/', result_base, mouse, date)
+        tiff_path = Path(tiff_base[0]+':/',tiff_base[1], mouse, date)
+    
+    drives = (franken, edrive, tiff_path)
+    
+    if must_exist:
+        doesnt_exist = [not drive.exists() for drive in drives]
+        
+        if any(doesnt_exist):
+            non_existing = [drive for drive,exist in zip(drives,doesnt_exist) if exist]
+            raise FileNotFoundError(f'Could not find one or more of the paths. {non_existing}')
+        
+    return dict(zip(keys, drives))

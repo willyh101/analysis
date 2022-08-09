@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import scipy.stats as stats
 import xarray as xr
 
 def min_subtract(traces):
@@ -100,4 +99,7 @@ def stims2names(unique_ids, trialwise_names):
 
 def unravel(traces: np.ndarray):
     """Go from trials x time x cell to cells x total time."""
-    return traces.transpose((2, 0, 1)).reshape((traces.shape[-1], -1))
+    return traces.transpose((1, 0, 2)).reshape((traces.shape[1], -1))
+
+def reravel(traces: np.ndarray, length):
+    return traces.reshape((traces.shape[0], -1, length)).transpose((1, 0, 2))

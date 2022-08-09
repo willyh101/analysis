@@ -1,9 +1,6 @@
-from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
-import matplotlib.font_manager as fm
 import numpy as np
 import matplotlib.pyplot as plt
 
-from holofun.vis import Retinotopy
 from .stats import sem
 
 def scatter2hist(x, y, bins=(10,10), ax=None, do_log=False, **kwargs):
@@ -74,9 +71,9 @@ def plot_tc(d, cell, ax=None, **kwargs):
     e = d[d.cell == cell].groupby('ori').sem()['df']
     xs = d.ori.unique()
     
-    lw = kwargs.setdefault('linewidth', 2)
+    kwargs.setdefault('linewidth', 2)
     
-    ax.errorbar(xs, m, e, linewidth=lw, **kwargs)
+    ax.errorbar(xs, m, e, **kwargs)
     ax.set_ylabel('$\Delta$F/F')
     ax.set_xticks(xs)
     ax.set_xticklabels(xs, rotation=-45)

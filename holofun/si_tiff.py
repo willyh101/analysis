@@ -43,6 +43,11 @@ class SItiffCore:
     def fr(self):
         return self._eval_numeric_metadata('scanVolumeRate')
     
+    def description(self, frame):
+        with ScanImageTiffReader(self.path) as reader:
+            header = reader.description(frame)
+        return header
+    
     def extract(self, z, ch):
         """
         Get the underlying data for a specified zplane and channel. 

@@ -1,15 +1,20 @@
-from .traces import min_subtract, rolling_baseline_dff, make_trialwise, baseline_subtract
-from .traces import cut_psths
-import scipy.stats as stats
-from .analysis import make_mean_df
 import pandas as pd
-from .vis import find_vis_resp, po, pdir, osi
+import scipy.stats as stats
+
+from .analysis import make_mean_df
+from .traces import (baseline_subtract, cut_psths, make_trialwise,
+                     min_subtract, rolling_baseline_dff, unravel)
+from .vis.generic import find_vis_resp, osi, pdir, po
+
 
 def process_s2p(s2p, epoch, pre_time, total_time=None, do_zscore=False):
     # get traces
     raw_traces = s2p.cut_traces_epoch(epoch)
     traces = min_subtract(raw_traces)
-    traces = rolling_baseline_dff(traces)
+    
+    # calculate rolling baseline
+    rwin = int(s2p.fr * 60)
+    traces = rolling_baseline_dff(traces, window=rwin)
     
     if do_zscore:
         traces = stats.zscore(traces, axis=1)
@@ -23,6 +28,16 @@ def process_s2p(s2p, epoch, pre_time, total_time=None, do_zscore=False):
         trwise = cut_psths(trwise, total_time)
         
     return traces, trwise
+
+def process_oasis(s2p, epoch, pre_time, penalty=0, optimize_g=True):
+    """Run the standard suite2p pipeline and then process with oasis."""
+    from .deconvolution import run_oasis
+    
+    _, trwise = process_s2p(s2p, epoch, pre_time)
+    tr_flat = unravel(trwise)
+    c,s,p = run_oasis(tr_flat, penalty=penalty, optimize_g=optimize_g)
+    
+    return c,s,p
 
 def ori_vis_pipeline(df, analysis_window):
     """

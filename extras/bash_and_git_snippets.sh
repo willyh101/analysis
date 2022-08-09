@@ -38,3 +38,15 @@ git remote add origin user@git_server:projectname.git
 git add .
 git commit -m "initial commit"
 git push -u origin main
+
+# set channels in conda for a specific env
+conda config --env --add channels conda-forge
+conda config --env --set channel_priority strict
+
+# update conda env from yml
+conda env update --file environment.yml  --prune
+# reinstall conda env
+conda env 
+
+# pull data from server
+rsync -avhP dataguest@128.32.177.197:/volume1/Frankenshare/Outfiles/ DEST

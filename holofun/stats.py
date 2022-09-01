@@ -49,3 +49,19 @@ def von_mises(x, kappa, mu, ht):
 
 def von_mises_sym(x, kappa, offset, ampl):
     return ampl * von_mises(x, kappa, 0, 1) + offset
+
+def bootstrap(x, func, nsample=None, nboot=10000, **kwargs):
+    if not nsample:
+        nsample = x.shape[0]
+    sample = []
+    for i in range(nboot):
+        y = np.random.choice(x, nsample, replace=True)
+        val = func(y, **kwargs)
+        sample.append(val)
+    return sample
+
+def jackknife(x, func):
+    """Jackknife estimate of the estimator func"""
+    n = len(x)
+    idx = np.arange(n)
+    return sum(func(x[idx!=i]) for i in range(n))/float(n)

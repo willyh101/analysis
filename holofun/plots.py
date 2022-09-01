@@ -97,3 +97,9 @@ def plot_cell_ret(ret_data, ret_fit):
         
     fig.subplots_adjust(wspace=.01, hspace=.01)
     plt.show()
+    
+def update_all(axes, **kwargs):
+    for ax in axes.ravel():
+        for k,v in kwargs.items():
+            fxn = eval(f'ax.{k}')
+            fxn(v)

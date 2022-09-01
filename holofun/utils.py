@@ -163,3 +163,6 @@ def make_paths(mouse, date, result_base, tiff_base='f:/experiments',
             raise FileNotFoundError(f'Could not find one or more of the paths. {non_existing}')
         
     return dict(zip(keys, drives))
+
+def cm_to_inch(value):
+    return value/2.54

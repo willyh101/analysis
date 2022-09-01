@@ -75,7 +75,7 @@ def match_cells(meds, targs, threshold=15):
     return matches
     
 
-def find_responsive_cells(df, col, cond, win, one_way=False, test_fxn='ttest', pval=0.05):
+def find_responsive_cells(df, col, cond, win, one_way=False, test_fxn='ttest', alpha=0.05):
     
     test_funs = {
         'ttest': _ttest_rel_df,
@@ -99,7 +99,9 @@ def find_responsive_cells(df, col, cond, win, one_way=False, test_fxn='ttest', p
     if one_way:
         ps /= 2
     
-    cells = np.where(ps < pval)[0]
+    resp_df = df_add_cellwise(resp_df, ps, 'pval')
+    cells = resp_df[resp_df['pval'] < alpha].cell.unique()
+    # cells = np.where(ps < pval)[0]
     
     return ps, cells
 
@@ -149,7 +151,7 @@ def get_targeted_cells(target_locs, cell_locs, threshold, verbose=True):
     return targeted_cells
 
 def get_holo_rois(targeted_cells, daq_roi_list, verbose=True):
-    holos = [targeted_cells[r-1] for r in daq_roi_list]
+    holos = [targeted_cells[r-1] for r in daq_roi_list] # -1 is for matlab fix
     holos = [np.array([h]) if isinstance(h, float) else h for h in holos]
     hfunc = lambda x: np.count_nonzero(~np.isnan(x))/len(x)
     holo_match_percent = np.array(list(map(hfunc, holos)))
@@ -195,3 +197,5 @@ def split_and_corr_cells(df: pd.DataFrame, col: str, frac=0.5, replace=False):
     mrg = s1_means.to_frame().join(s2_means, rsuffix='2').reset_index()
     corr_vals = mrg.groupby(['cell'])[['df','df2']].corr().iloc[0::2,-1].values
     return corr_vals
+
+# def measure_stim_distance():

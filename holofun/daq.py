@@ -136,7 +136,7 @@ class SetupDaqFile:
         with h5py.File(self.path, 'r') as f:
             ref = f['ExpStruct/Holo/holoRequests'][self.hrnum,0]
             rois_ref = f[ref]['rois'][:].squeeze()
-            rois = [f[r][:].squeeze().astype(np.int) for r in rois_ref]
+            rois = [f[r][:].reshape((-1)).astype(np.int) for r in rois_ref]
         return rois
             
     def get_targets(self):

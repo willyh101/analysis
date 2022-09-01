@@ -37,7 +37,7 @@ def plot_mean_dff(trwise_data, cells=None, trials=None, xvals=None, ax=None, **k
     
     return ax
 
-def plot_mean_dff_by_cell(trwise_data, cells=None, trials=None, xvals=None, ax=None):
+def plot_mean_dff_by_cell(trwise_data, cells=None, trials=None, xvals=None, ax=None, **kwargs):
     if ax is None:
        fig, ax = plt.subplots(1,1, figsize=(4,4), constrained_layout=True)
        
@@ -57,8 +57,8 @@ def plot_mean_dff_by_cell(trwise_data, cells=None, trials=None, xvals=None, ax=N
         x = xvals
     
     for c,m,e in zip(cells, mm, err):
-        ax.plot(x, m, label=c)
-        ax.fill_between(x, m+e, m-e, alpha=0.5)
+        ax.plot(x, m, label=c, **kwargs)
+        ax.fill_between(x, m+e, m-e, alpha=0.5, **kwargs)
 
     return ax
 

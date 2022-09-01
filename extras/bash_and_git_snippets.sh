@@ -50,3 +50,6 @@ conda env
 
 # pull data from server
 rsync -avhP dataguest@128.32.177.197:/volume1/Frankenshare/Outfiles/ DEST
+
+# prevent auto init of conda env
+conda config --set auto_activate_base false

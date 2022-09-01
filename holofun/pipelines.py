@@ -3,8 +3,9 @@ import scipy.stats as stats
 
 from .analysis import make_mean_df
 from .traces import (baseline_subtract, cut_psths, make_trialwise,
-                     min_subtract, rolling_baseline_dff, unravel)
-from .vis.generic import find_vis_resp, osi, pdir, po
+                     min_subtract, rolling_baseline_dff, unravel, reravel)
+from .vis.generic import find_vis_resp
+from .vis.tuning import osi, pdir, po
 
 
 def process_s2p(s2p, epoch, pre_time, total_time=None, do_zscore=False):
@@ -29,13 +30,19 @@ def process_s2p(s2p, epoch, pre_time, total_time=None, do_zscore=False):
         
     return traces, trwise
 
-def process_oasis(s2p, epoch, pre_time, penalty=0, optimize_g=True):
+def process_oasis(s2p, epoch, pre_time, penalty=0, optimize_g=True, as_trialwise=True):
     """Run the standard suite2p pipeline and then process with oasis."""
     from .deconvolution import run_oasis
     
     _, trwise = process_s2p(s2p, epoch, pre_time)
     tr_flat = unravel(trwise)
     c,s,p = run_oasis(tr_flat, penalty=penalty, optimize_g=optimize_g)
+    
+    if as_trialwise:
+        min_length = min(s2p.get_epoch_trial_lengths(epoch))
+        c = reravel(c, min_length)
+        s = reravel(s, min_length)
+        p = reravel(p, min_length)
     
     return c,s,p
 

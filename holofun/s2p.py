@@ -1,5 +1,7 @@
 import numpy as np
 from pathlib import Path
+
+from .tiffs import get_crop_mask
 from .simple_guis import openfoldergui
 
 def eucl_motion(s2p_ops):
@@ -46,6 +48,9 @@ class Suite2pData:
         self.iscell = self.get_iscell()
         self.meds = self.get_iscell_meds()
         
+        # get stat for clicked cells
+        self.stat = self.get_stat_iscell()
+        
         # get traces and do NP subtraction
         self.neucoeff = self.ops[0]['neucoeff']
         
@@ -54,6 +59,11 @@ class Suite2pData:
         self.spks = self.load_traces_npy('spks.npy')
         
         self.F = neuropil_subtract(self.F_raw, self.Neu, self.neucoeff)
+        
+    def get_stat_iscell(self):
+        stat_combined = np.concatenate(self.stats)
+        iscell = self.iscell[:,0].astype(bool)
+        return stat_combined[iscell]
         
     def get_iscell_meds(self, optotune_depths=None):
         data = []
@@ -130,8 +140,30 @@ class Suite2pData:
         ops = self.ops[0]
         tiff_splits = np.where(ops['first_tiffs'])[0][1:] # don't include the first bc it's zero
         epoch_file_lengths = np.split(ops['frames_per_file'], tiff_splits)
-        return epoch_file_lengths[epoch]   
-         
+        return epoch_file_lengths[epoch]
+    
+    def get_img(self, plane, ch=0):
+        if ch == 0:
+            return self.ops[plane]['meanImg']
+        else:
+            return self.ops[plane]['meanImg_chan2']
+    
+    def get_cell_mask(self, cell, bb_crop=None):
+        stat = self.stat[cell]
+        ypix = stat['ypix'][~stat['overlap']]
+        xpix = stat['xpix'][~stat['overlap']]
+        
+        im = np.zeros((self.ops[0]['Ly'], self.ops[0]['Lx']))
+        im[ypix,xpix] = stat['lam']
+        
+        if bb_crop:
+            x, y = self.meds[cell,:2]
+            x -= self.ops[0].get('remove_artifacts', [0])[0]
+            crop_mask = get_crop_mask(x, y, bb_crop)
+            im = im[crop_mask]
+        
+        return im
+        
     @classmethod
     def from_names(cls, result_folder, mouse, date, epoch='*'):
         pass

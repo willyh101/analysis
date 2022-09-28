@@ -1,0 +1,34 @@
+name: analysis
+channels: 
+ - conda-forge
+ - defaults
+dependencies:
+ - python
+ - pip
+ - notebook
+ - jupyterlab
+ - numpy
+#  - numexpr # depend MKL install
+#  - "libblas=*=*mkl" # for intel MKL numpy
+ - xarray
+ - pandas
+ - matplotlib
+ - seaborn
+ - scikit-learn
+ - scipy
+ - statsmodels
+ - matplotlib
+ - h5py
+ - scikit-image
+ - imageio
+ - imageio-ffmpeg
+ - dask # optional, ? not working with MKL
+ - numba # optional, ? not working with MKL
+ - cython # optional, for OASIS
+ - pip:
+   - pytest
+   - scanimage-tiff-reader
+   - tqdm
+   - tifffile
+   - jax[cpu] # will not work in windows
+   - git+https://github.com/j-friedrich/OASIS # will not build in windows

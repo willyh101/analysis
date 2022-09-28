@@ -4,12 +4,11 @@ from pathlib import Path
 from .tiffs import get_crop_mask
 from .simple_guis import openfoldergui
 
-def eucl_motion(s2p_ops):
+def eucl_motion(x_off, y_off):
     """
-    Calculates the euclidian distance of motion on a trialwise basis using X and Y offsets
-    from suite2p ops.
+    Calculates the euclidian distance of motion on a trialwise basis using X and Y offsets.
     """
-    offsets = np.vstack((s2p_ops['xoff'], s2p_ops['yoff']))
+    offsets = np.vstack([x_off, y_off])
     offsets = offsets - np.median(offsets, axis=1).reshape(-1,1)
     return np.linalg.norm(offsets, axis=0)
 
@@ -59,6 +58,9 @@ class Suite2pData:
         self.spks = self.load_traces_npy('spks.npy')
         
         self.F = neuropil_subtract(self.F_raw, self.Neu, self.neucoeff)
+        
+    def get_motion(self):
+        return eucl_motion(self.ops[0]['xoff'], self.ops[0]['yoff'])
         
     def get_stat_iscell(self):
         stat_combined = np.concatenate(self.stats)

@@ -103,3 +103,11 @@ def unravel(traces: np.ndarray):
 
 def reravel(traces: np.ndarray, length):
     return traces.reshape((traces.shape[0], -1, length)).transpose((1, 0, 2))
+
+def roll_ind(A, r):
+    rows, column_indices = np.ogrid[:A.shape[0], :A.shape[1]]
+
+    r[r < 0] += A.shape[1]
+    column_indices = column_indices - r[:, np.newaxis]
+
+    return A[rows, column_indices]

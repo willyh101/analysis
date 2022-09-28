@@ -100,16 +100,16 @@ def nbsetup():
         if __IPYTHON__:
             get_ipython().magic('load_ext autoreload')
             get_ipython().magic('autoreload 3')
+            get_ipython().magic('matplotlib inline')
             get_ipython().magic("config InlineBackend.figure_format = 'retina'")
     except NameError:
         pass
     
     try:
         import seaborn as sns
-        # sns.set_style('ticks',{'axes.spines.right': False, 'axes.spines.top': False}) # removes annoying top and right axis
-        # sns.set_context('notebook') # can change to paper, poster, talk, notebook
+        sns.set_style('ticks',{'axes.spines.right': False, 'axes.spines.top': False}) # removes annoying top and right axis
+        sns.set_context('notebook') # can change to paper, poster, talk, notebook
     except ModuleNotFoundError:
-        # warnings.warn('Failed to import seaborn.')
         logging.warning('Failed to import seaborn.')
         
     try:
@@ -130,7 +130,7 @@ def nbsetup():
         # add to remove seaborn dependency
         mpl.rcParams['axes.spines.top'] = False
         mpl.rcParams['axes.spines.right'] = False
-        mpl.rcParams['font.size'] = 14
+        mpl.rcParams['font.size'] = 10
         mpl.rcParams['figure.constrained_layout.use'] = True
     except ModuleNotFoundError:
         logging.warning('Failed to import matplotlib.')

@@ -44,9 +44,9 @@ conda config --env --add channels conda-forge
 conda config --env --set channel_priority strict
 
 # update conda env from yml
-conda env update --file environment.yml  --prune
+conda env update --file environment.yml --prune
 # reinstall conda env
-conda env 
+conda env create --file environment.yml --force
 
 # pull data from server
 rsync -avhP dataguest@128.32.177.197:/volume1/Frankenshare/Outfiles/ DEST

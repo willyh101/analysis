@@ -5,12 +5,12 @@ import shutil
 import time
 
 # note: assumes you are saving date/mouse/epoch on the server
-use_gui = False
+use_gui = True
 multithreaded = False
 
 # not needed if using gui
-mouse = 'w42_2'
-date = '20220302'
+mouse = 'w49_1'
+date = '20220706'
 
 # remote server location
 remote = 'x:/will/scanimage data'

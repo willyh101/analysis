@@ -1,8 +1,8 @@
 name: analysis
 channels: 
- # running defaults ahead of forge will likely get you mkl (on windows)
- - defaults
+# running defaults ahead of forge will likely get you mkl (on windows)
  - conda-forge
+ - defaults
 dependencies:
  - python
  - pip
@@ -11,7 +11,7 @@ dependencies:
  - numpy
 #  - numexpr # depend MKL install
 #  - "libblas=*=*mkl" # for intel MKL numpy
- - xarray
+ - xarraypiup
  - pandas
  - matplotlib
  - seaborn
@@ -31,5 +31,5 @@ dependencies:
    - scanimage-tiff-reader
    - tqdm
    - tifffile
-  #  - jax[cpu] # will not work in windows
-  #  - git+https://github.com/j-friedrich/OASIS # might not build in windows
+   - jax[cpu] # will not work in windows
+   - git+https://github.com/j-friedrich/OASIS # might not build in windows

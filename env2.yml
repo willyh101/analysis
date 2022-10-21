@@ -11,7 +11,7 @@ dependencies:
  - numpy
 #  - numexpr # depend MKL install
 #  - "libblas=*=*mkl" # for intel MKL numpy
- - xarraypiup
+ - xarray
  - pandas
  - matplotlib
  - seaborn

@@ -44,7 +44,7 @@ def pdir(df: pd.DataFrame):
 
     return pref_dir
 
-def get_tc(mdf, drop_grey_screen=True, ori=False):
+def get_tc(mdf, drop_grey_screen=True, ori=False, return_err=False):
     if drop_grey_screen:
         vals = mdf.loc[mdf.ori >= 0].copy()
     else:
@@ -53,8 +53,14 @@ def get_tc(mdf, drop_grey_screen=True, ori=False):
     if ori:
         vals['ori'] = vals['ori'] % 180
         
-    return vals.groupby(['cell', 'ori'], as_index=False).mean()
-
+    m = vals.groupby(['cell', 'ori'], as_index=False).mean()
+    e = vals.groupby(['cell', 'ori'], as_index=False).sem()
+    
+    if return_err:
+        return m, e
+    else:
+        return m
+        
 def dsi(mdf: pd.DataFrame):    
     
     tc = get_tc(mdf, drop_grey_screen=True, ori=False)

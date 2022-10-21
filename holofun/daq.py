@@ -237,7 +237,7 @@ class SetupDaqFile:
         print(f'Imaging Params:  {self.imaging_params}')
         print(f'PMTs:            {self.pmts}')
         print('')
-        print(decode(self.path, 'ExpStruct/EpochText1')[self.epoch])
+        # print(decode(self.path, 'ExpStruct/EpochText1')[self.epoch])
         # print(decode(self.path, 'ExpStruct/EpochText2')[self.epoch])
             
     @classmethod

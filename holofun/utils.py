@@ -4,6 +4,7 @@ import time
 import functools
 import os
 import logging
+from collections import defaultdict
 
 def make_results_folder(root, mouse, date, folder_name='results', chdir=True):
     """
@@ -120,7 +121,7 @@ def nbsetup():
 
     try:
         import matplotlib as mpl
-        mpl.rcParams['savefig.dpi'] = 600 # default resolution for saving images in matplotlib
+        # mpl.rcParams['savefig.dpi'] = 600 # default resolution for saving images in matplotlib
         mpl.rcParams['savefig.format'] = 'pdf' # defaults to png for saved images (SVG is best, however)
         mpl.rcParams['savefig.bbox'] = 'tight' # so saved graphics don't get chopped
         mpl.rcParams['image.cmap'] = 'viridis'
@@ -130,7 +131,7 @@ def nbsetup():
         # add to remove seaborn dependency
         mpl.rcParams['axes.spines.top'] = False
         mpl.rcParams['axes.spines.right'] = False
-        mpl.rcParams['font.size'] = 10
+        # mpl.rcParams['font.size'] = 10
         mpl.rcParams['figure.constrained_layout.use'] = True
     except ModuleNotFoundError:
         logging.warning('Failed to import matplotlib.')
@@ -155,14 +156,42 @@ def make_paths(mouse, date, result_base, tiff_base='f:/experiments',
     
     drives = (franken, edrive, tiff_path)
     
+    # only check hdd locations as optional files might not exist
     if must_exist:
         doesnt_exist = [not drive.exists() for drive in drives]
         
         if any(doesnt_exist):
             non_existing = [drive for drive,exist in zip(drives,doesnt_exist) if exist]
             raise FileNotFoundError(f'Could not find one or more of the paths. {non_existing}')
+    
+    paths = dict(zip(keys, drives))
+    
+    # find etc specific files
+    # globbed items can be handled the same way 
+    handle_globs = {
+        'setupdaq': tiff_path.glob(date[2:]+'*.mat'),
+        's2p': edrive.rglob('suite2p'),
+        'clicked_cells': tiff_path.glob('*clicked*.npy'),
+        'mm3d': tiff_path.rglob('makeMasks3D_img.mat'),
+        'img920': tiff_path.rglob('*920_*.tif*'),
+        'img1020': tiff_path.rglob('*1020_*.tif*'),
+        'img800': tiff_path.rglob('*800_*.tif*'),
+        'ori': tiff_path.rglob('*ori*.mat'),
+        'ret': tiff_path.rglob('*ret*.mat'),
+        'si_online': tiff_path.rglob('*IntegrationRois*.csv')
+    }
+    
+    # assign vals in path dict
+    for k,v in handle_globs.items():
+        v = list(v)
+        if len(v) == 1:
+            paths[k] = v[0]
+        elif len(v) > 1:
+            paths[k] = v
+        else:
+            paths[k] = 'path NA'
         
-    return dict(zip(keys, drives))
+    return paths   
 
 def cm_to_inch(value):
     return value/2.54

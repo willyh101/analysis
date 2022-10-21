@@ -62,14 +62,17 @@ def plot_mean_dff_by_cell(trwise_data, cells=None, trials=None, xvals=None, ax=N
 
     return ax
 
-def plot_tc(d, cell, ax=None, **kwargs):
-    """Give a DataFrame and a cell number, plot the tuning curve."""
+def plot_tc(d, cell, drop_grey_screen=True, ax=None, **kwargs):
+    """Give a mean DataFrame and a cell number, plot the tuning curve."""
     if ax is None:
         fig, ax = plt.subplots(1,1, figsize=(3,3), constrained_layout=True)
         
-    m = d[d.cell == cell].groupby('ori').mean()['df']
-    e = d[d.cell == cell].groupby('ori').sem()['df']
-    xs = d.ori.unique()
+    if drop_grey_screen:
+        vals = d.loc[d.ori >= 0].copy()
+        
+    m = vals[vals.cell == cell].groupby('ori').mean()['df']
+    e = vals[vals.cell == cell].groupby('ori').sem()['df']
+    xs = vals.ori.unique()
     
     kwargs.setdefault('linewidth', 2)
     

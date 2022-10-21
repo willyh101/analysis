@@ -50,7 +50,7 @@ def coords2cells(coords, meds, threshold=15):
         
         matches.append(this_plane_meds[match_idx,:])
         distances.append(dists[dists < threshold])
-        ismatched.append(dists < threshold)
+        ismatched.append(np.atleast_1d(dists < threshold))
     
     
     locs = np.vstack(matches)

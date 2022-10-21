@@ -8,7 +8,7 @@ import numpy as np
 
 MINMAX = (0,250)
 CHANNEL = 'r'
-XSLICE = slice(105,407)
+XSLICE = slice(0,512)
 YSLICE = slice(0,512)
 
 

@@ -1,43 +1,63 @@
+"""
+CLI-based version of my automated data mover.
+"""
+
+import argparse
 from pathlib import Path
+import platform
 from tqdm import tqdm
 import shutil
 import time
 
-# note: assumes you are saving date/mouse/epoch on the server
-use_gui = True
-multithreaded = False
 
-# not needed if using gui
-mouse = 'w49_1'
-date = '20220706'
+remote_root_win = 'x:/'
+remote_root_wsl = '/mnt/franken/'
+if platform.system() == 'Linux':
+    rt = remote_root_wsl
+else:
+    rt = remote_root_win
 
 # remote server location
-remote = 'x:/will/scanimage data'
+remote = rt+'will/scanimage data'
 
 # daq file loc
-daq_loc = 'x:/setupdaq'
+daq_loc = rt+'setupdaq'
 
 # vis stim data loc
-vis_loc = 'x:/stimdata'
+vis_loc = rt+'stimdata'
 
 # new vis stim data loc
-vis_loc_new = 'x:/will/pt data'
+vis_loc_new = rt+'will/pt data'
 
 # local destination
-destination = 'f:/experiments'
-
-
-
-###---- begin moving files ----###
-if use_gui:
-    from holofun.simple_guis import openfoldergui
-    pth = openfoldergui(rootdir=remote, title='Select experiment to move...')
-    src = Path(pth)
-    mouse = src.stem
-    date = src.parent.stem
+if platform.system() == 'Linux':
+    destination = '/mnt/f/experiments'
 else:
-    src = Path(remote, date, mouse)
-        
+    destination = 'f:/experiments'
+
+
+##--- handle args ---##
+parser = argparse.ArgumentParser(description="""Move data from server to desktop for a given experiment.\n
+                                                Assumes a date/mouse/epoch folder structure on the server.""")
+parser.add_argument('mouse', type=str)
+parser.add_argument('date', type=str)
+parser.add_argument('--remote', help='remote server location', default=remote, dest='remote')
+parser.add_argument('--daqloc', help='daq file location', default=daq_loc, dest='daq_loc')
+parser.add_argument('--visloc', help='vis stim file location', default=vis_loc, dest='vis_loc')
+parser.add_argument('--dest', help='destination folder', default=destination, dest='destination')
+args = parser.parse_args()
+
+for k,v in vars(args).items():
+    locals()[k] = v
+    
+mouse = args.mouse
+date = args.date
+src = Path(remote, date, mouse)
+
+if not src.exists():
+    raise FileNotFoundError(f'Experiment not found at remote path {src}')
+    
+###---- begin moving files ----###
 dst = Path(destination, mouse, date)
 daq_loc = Path(daq_loc)
 vis_loc = Path(vis_loc, date[2:], mouse)

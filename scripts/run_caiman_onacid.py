@@ -1,8 +1,9 @@
 import sys
 from pathlib import Path
 
-sys.path.append('H:/My Drive/Code/holofun')
+# sys.path.append('H:/My Drive/Code/holofun')
 # sys.path.append('c:/users/will/code/analysis')
+sys.path.append('c:/users/will/code/holofun')
 
 from holofun.tiffs import SItiff
 from holofun.caiman_utils import run_caiman_onacid
@@ -10,11 +11,11 @@ from holofun.utils import tic, ptoc_min
 
 # input params
 # data_root = 'd:/frankenrig/experiments'
-data_root = 'x:/will/scanimage data'
-mouse = 'w42_2'
-date = '20220208'
-epochs = ['5']
-xtrim = 106
+data_root = 'f:/experiments'
+mouse = 'w54_2'
+date = '20221005'
+epochs = ['1ret', '2ret', '3ori', '4stim', '5expt']
+xtrim = 110
 
 # output params
 # results_root = 'd:/frankenrig/experiments'
@@ -23,8 +24,8 @@ results_root = 'e:/results'
 # other params
 caiman_temp = 'k:/tmp/caiman'
 
-# pths = [Path(data_root, mouse, date, epoch) for epoch in epochs]
-pths = [Path(data_root, date, mouse, epoch) for epoch in epochs]
+pths = [Path(data_root, mouse, date, epoch) for epoch in epochs]
+# pths = [Path(data_root, date, mouse, epoch) for epoch in epochs]
 
 movs = list(pths[0].glob('*.tif*'))
 tmp_tiff = SItiff(movs[0])

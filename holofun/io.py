@@ -27,4 +27,12 @@ def load_ori_data(path):
     return out
 
 def load_ret_data(path):
-    pass
+    result = sio.loadmat(path, squeeze_me=True)['result'][()]
+    locinds = result['locinds']
+    out = {
+        'locinds': locinds,
+        'gridsize': result['sizes'],
+        'Ny': locinds[:,0].max(),
+        'Nx': locinds[:,1].max()
+    }
+    return out

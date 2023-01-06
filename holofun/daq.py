@@ -1,6 +1,7 @@
 from .simple_guis import openfilegui
 import numpy as np
 import h5py
+import logging
 
 # going to start by writing functions but eventially this
 # should be folded into a DaqFile class
@@ -39,7 +40,8 @@ class SetupDaqFile:
                 self.out_id = self.get_out_id()
             except KeyError:
                 print('Has no outID!')
-            
+        
+        try:
             # holo stuff
             self.hrnum = self.get_hrnum()
             try:
@@ -51,6 +53,8 @@ class SetupDaqFile:
                 self.targets = self.get_targets()
                 self.rois = self.get_rois()
                 self.stim_times = self.get_stim_times()
+        except:
+            logging.warning('Failed to load holorequest?')
         
     def get_hrnum(self):
         with h5py.File(self.path, 'r') as f:
@@ -237,7 +241,10 @@ class SetupDaqFile:
         print(f'Imaging Params:  {self.imaging_params}')
         print(f'PMTs:            {self.pmts}')
         print('')
-        # print(decode(self.path, 'ExpStruct/EpochText1')[self.epoch])
+        try:
+            print(decode(self.path, 'ExpStruct/EpochText1')[self.epoch])
+        except:
+            pass
         # print(decode(self.path, 'ExpStruct/EpochText2')[self.epoch])
             
     @classmethod

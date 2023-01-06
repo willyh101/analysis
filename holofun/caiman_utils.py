@@ -61,7 +61,7 @@ def transfer_movies(src_folders:List[Path], tmp_folder:Path, zplane:int, xtrim=0
             if temp_mov.shape[0] < 10:
                 continue
             length_list.append(temp_mov.shape[0])
-            fname = f'temp_{i:05}.tif'
+            fname = f'temp_{f_count:05}.tif'
             tifffile.imsave(fname, temp_mov)
             mlist.append(fname)
             src_movs.append(str(m))
@@ -100,7 +100,7 @@ def load_A_asarray(h):
 def reshape_A(A, dims):
     return A.reshape((*dims, -1), order='F')
 
-def run_caiman_batch(opts:dict, params:dict, plane:int):
+def run_caiman_batch(opts:dict, params:dict, plane:int, Ain=None):
     tt = tic()
     t_setup = tic()
     print(f'Starting plane {plane}...')
@@ -144,41 +144,54 @@ def run_caiman_batch(opts:dict, params:dict, plane:int):
     
     
     ##---MOTION CORRECTION---##
-    t_motion = tic()
-    print('Starting caiman CNMF (batch) pipeline.')
-    print('Begin motion correction.')
-    
-    # start cluster
-    c, dview, n_processes = cm.cluster.setup_cluster(
-        backend='local', n_processes=None, single_thread=False)
-    
-    # do motion correction
-    mc = MotionCorrect(movs, dview=dview, **params.get_group('motion'))
-    mc.motion_correct(save_movie=True)
-    
-    # memory map the file in order 'C'
-    border_to_0 = 0 if mc.border_nan is 'copy' else mc.border_to_0 
-    fname_new = cm.save_memmap(mc.mmap_file, base_name='memmap_', order='C',
-                        border_to_0=border_to_0, dview=dview) # exclude borders
-    Yr, dims, T = cm.load_memmap(fname_new)
-    images = np.reshape(Yr.T, [T] + list(dims), order='F') 
-        #load frames in python format (T x X x Y)
-    opts['mmap_file'] = fname_new
+    if opts.get('do_mc', True):
+        t_motion = tic()
+        print('Starting caiman CNMF (batch) pipeline.')
+        print('Begin motion correction.')
         
-    cm.stop_server(dview=dview)
-    c, dview, n_processes = cm.cluster.setup_cluster(
-        backend='local', n_processes=None, single_thread=False)
-    
-    opts['t_motion'] =  toc(t_motion)
-    ptoc(t_motion, 'Motion correction complete.')
-    ptoc_min(tt)
+        # start cluster
+        c, dview, n_processes = cm.cluster.setup_cluster(
+            backend='local', n_processes=None, single_thread=False)
+        
+        # do motion correction
+        mc = MotionCorrect(movs, dview=dview, **params.get_group('motion'))
+        mc.motion_correct(save_movie=True)
+        
+        # memory map the file in order 'C'
+        border_to_0 = 0 if mc.border_nan is 'copy' else mc.border_to_0 
+        fname_new = cm.save_memmap(mc.mmap_file, base_name='memmap_', order='C',
+                            border_to_0=border_to_0, dview=dview) # exclude borders
+        Yr, dims, T = cm.load_memmap(fname_new)
+        images = np.reshape(Yr.T, [T] + list(dims), order='F') 
+            #load frames in python format (T x X x Y)
+        opts['mmap_file'] = fname_new
+            
+        cm.stop_server(dview=dview)
+        c, dview, n_processes = cm.cluster.setup_cluster(
+            backend='local', n_processes=None, single_thread=False)
+        
+        opts['t_motion'] =  toc(t_motion)
+        ptoc(t_motion, 'Motion correction complete.')
+        ptoc_min(tt)
+    else:
+        try:
+            cm.stop_server(dview=dview)
+        except:
+            pass
+
+        c, dview, n_processes = cm.cluster.setup_cluster(
+            backend='local', n_processes=None, single_thread=False)
+        fname_new = opts['mc_filepath']
+        Yr, dims, T = cm.load_memmap(fname_new)
+        images = np.reshape(Yr.T, [T] + list(dims), order='F') 
+
     
     
     ##---CNMF---##
     t_cnmf = tic()
     print('Begin CNMF batch.')
     
-    cnm = cnmf.CNMF(n_processes, params=params, dview=dview)
+    cnm = cnmf.CNMF(n_processes, params=params, dview=dview, Ain=Ain)
     cnm = cnm.fit(images)
     cnm.estimates.detrend_df_f()
     cnm.estimates.deconvolve(cnm.params)

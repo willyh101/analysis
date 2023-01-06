@@ -9,8 +9,6 @@ dependencies:
  - notebook
  - jupyterlab
  - numpy
-#  - numexpr # depend MKL install
-#  - "libblas=*=*mkl" # for intel MKL numpy
  - xarray
  - pandas
  - matplotlib
@@ -21,11 +19,12 @@ dependencies:
  - matplotlib
  - h5py
  - scikit-image
- - imageio
- - imageio-ffmpeg
+#  - imageio
+#  - imageio-ffmpeg
  - dask # optional
  - numba # optional
  - cython # optional, for OASIS
+ - cvxpy
  - pip:
    - pytest
    - scanimage-tiff-reader

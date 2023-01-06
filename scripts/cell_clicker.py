@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import numpy as np
 
-MINMAX = (0,250)
+MINMAX = (0,150)
 CHANNEL = 'r'
+# don't use these options it will fuck up your coordinates!!
 XSLICE = slice(0,512)
 YSLICE = slice(0,512)
 
@@ -16,7 +17,8 @@ def search_for_file_path():
     root = tkinter.Tk()
     root.withdraw()
     # base_dir = 'd:/frankenrig/experiments'
-    base_dir = 'f:/experiments'
+    # base_dir = 'f:/experiments'
+    base_dir = '/mnt/data2/experiments'
     file_name = filedialog.askopenfilename(parent=root, initialdir=base_dir, 
                                            title='Select Image')
     return file_name
@@ -112,6 +114,7 @@ def main():
     spath = fpath.parent/'clicked_cell_locs.npy'
     all_pts = [item for sublist in all_pts for item in sublist]
     np.save(spath, all_pts)
+    print(f'Saved to: {spath}')
     
 if __name__ == '__main__':
     main()

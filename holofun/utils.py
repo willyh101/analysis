@@ -96,7 +96,7 @@ def verifyrun(func):
 def replace_tup_ix(tup, ix, val):
     return tup[:ix] + (val,) + tup[ix+1:]
 
-def nbsetup():
+def nbsetup(despine=True, constrained=True):
     try:
         if __IPYTHON__:
             get_ipython().magic('load_ext autoreload')
@@ -106,12 +106,12 @@ def nbsetup():
     except NameError:
         pass
     
-    try:
-        import seaborn as sns
-        sns.set_style('ticks',{'axes.spines.right': False, 'axes.spines.top': False}) # removes annoying top and right axis
-        sns.set_context('notebook') # can change to paper, poster, talk, notebook
-    except ModuleNotFoundError:
-        logging.warning('Failed to import seaborn.')
+    # try:
+    #     import seaborn as sns
+    #     # sns.set_style('ticks',{'axes.spines.right': False, 'axes.spines.top': False}) # removes annoying top and right axis
+    #     # sns.set_context('notebook') # can change to paper, poster, talk, notebook
+    # except ModuleNotFoundError:
+    #     logging.warning('Failed to import seaborn.')
         
     try:
         import pandas as pd
@@ -129,10 +129,12 @@ def nbsetup():
         mpl.rcParams['savefig.transparent'] = True
         mpl.rcParams['pdf.fonttype'] = 42
         # add to remove seaborn dependency
-        mpl.rcParams['axes.spines.top'] = False
-        mpl.rcParams['axes.spines.right'] = False
+        if despine:
+            mpl.rcParams['axes.spines.top'] = False
+            mpl.rcParams['axes.spines.right'] = False
         # mpl.rcParams['font.size'] = 10
-        mpl.rcParams['figure.constrained_layout.use'] = True
+        if constrained:
+            mpl.rcParams['figure.constrained_layout.use'] = True
     except ModuleNotFoundError:
         logging.warning('Failed to import matplotlib.')
 
@@ -145,9 +147,12 @@ def make_paths(mouse, date, result_base, tiff_base='f:/experiments',
     tiff_base = tiff_base.replace(':','').split('/')
     
     if platform.system() == 'Linux':
-        franken = Path('/mnt/franken')
-        edrive = Path('/mnt/e/', result_base, mouse, date)
-        tiff_path = Path('/mnt', *tiff_base, mouse, date)
+        # franken = Path('/mnt/franken')
+        # edrive = Path('/mnt/e/', result_base, mouse, date)
+        # tiff_path = Path('/mnt', *tiff_base, mouse, date)
+        franken = Path('/mnt/frankenshare')
+        edrive = Path('/mnt/localdata/', result_base, mouse, date)
+        tiff_path = Path('/mnt', 'data2/experiments', mouse, date)
         
     else:
         franken = Path(franken_drive + ':/')
@@ -171,19 +176,20 @@ def make_paths(mouse, date, result_base, tiff_base='f:/experiments',
     handle_globs = {
         'setupdaq': tiff_path.glob(date[2:]+'*.mat'),
         's2p': edrive.rglob('suite2p'),
-        'clicked_cells': tiff_path.glob('*clicked*.npy'),
+        'clicked_cells': tiff_path.rglob('*clicked*.npy'),
         'mm3d': tiff_path.rglob('makeMasks3D_img.mat'),
         'img920': tiff_path.rglob('*920_*.tif*'),
         'img1020': tiff_path.rglob('*1020_*.tif*'),
         'img800': tiff_path.rglob('*800_*.tif*'),
         'ori': tiff_path.rglob('*ori*.mat'),
         'ret': tiff_path.rglob('*ret*.mat'),
-        'si_online': tiff_path.rglob('*IntegrationRois*.csv')
+        'si_online': tiff_path.rglob('*IntegrationRois*.csv'),
+        'mat': tiff_path.rglob('*.mat')
     }
     
     # assign vals in path dict
     for k,v in handle_globs.items():
-        v = list(v)
+        v = sorted(v)
         if len(v) == 1:
             paths[k] = v[0]
         elif len(v) > 1:

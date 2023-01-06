@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-eval "$(conda shell.bash hook)"
-conda activate analysis
-echo "First, moving files..."
-python ~/holofun/scripts/datamover_cli.py $1 $2
-echo "Second, checking tiffs..."
-python ~/holofun/scripts/tiffchecker.py $1 $2
-echo "Add done, now run suite2p yourself."

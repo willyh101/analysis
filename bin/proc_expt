@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+"""
+CLI-based version of my automated data mover.
+"""
+
+import argparse
+from pathlib import Path
+import platform
+from tqdm import tqdm
+import shutil
+import time
+
+###---- file path locations ----###
+# define remote root paths
+rt = '/mnt/frankenshare/'
+remote = rt+'will/scanimage data'
+
+# daq/vis stim files
+daq_loc = rt+'setupdaq'
+vis_loc = rt+'stimdata'
+vis_loc_new = rt+'will/pt data'
+
+# local destinations
+tiff_base = '/mnt/data2/experiments'
+result_base = '/mnt/localdata'
+
+
+###---- suite2p settings ----###
+# suite2p ops
+ops_to_use = 'default_ops'
+
+###---- other settings ----###
+# size for junk tiffs
+sz_threshold_mb = 10
+
+
+###---- RUN SCRIPT ----###
+parser = argparse.ArgumentParser(description="""Move data from server to desktop for a given experiment.\n
+                                                Assumes a date/mouse/epoch folder structure on the server.""")
+parser.add_argument('mouse', type=str)
+parser.add_argument('date', type=str)
+parser.add_argument('dest', type=str,
+                    help="name of folder to save into. will be create if it doesn't exist")
+parser.add_argument('--dryrun', 
+                    help='runs but does not delete anything (for checking tiffs)',
+                    action='store_true')
+args = parser.parse_args()
+
+# locally scope vals from args
+mouse = args.mouse
+date = args.date
+dest = args.dest
+dry_run = args.dryrun
+
+src = Path(remote, date, mouse)
+if not src.exists():
+    raise FileNotFoundError(f'Experiment not found at remote path {src}')
+
+# ask about epochs

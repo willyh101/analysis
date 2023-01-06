@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+DEST='figure ground'
+
+eval "$(conda shell.bash hook)"
+
+conda activate analysis
+echo "First, moving files..."
+#python ~/holofun/scripts/datamover_cli.py $1 $2
+movedata $1 $2
+
+echo "Second, checking tiffs..."
+# python ~/holofun/scripts/tiffchecker.py $1 $2
+tiffchecker $1 $2
+
+conda deactivate
+echo "All done, now to suite2p..."
+
+conda activate suite2p
+python ~/code/holofun/bin/s2p_cli $1 $2 DEST

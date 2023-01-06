@@ -1,0 +1,91 @@
+#!/usr/bin/env python
+"""
+CLI-based checker for junk tiffs that ScanImage occasionally creates.
+"""
+from pathlib import Path
+import argparse
+import platform
+from tqdm import tqdm
+
+SZ_THRESHOLD_MB = 10
+BASE_PATH_WIN = 'f:/experiments'
+BASE_PATH_WSL = '/mnt/data2/experiments'
+
+def check_tiffs(search_path: Path, sz_threshold_mb):
+    sz_threshold = sz_threshold_mb * 1024 * 1024
+    fs = sorted(search_path.rglob('*.tif*'))
+    silence = not VERBOSE
+    
+    junk = []
+    for f in tqdm(fs, desc='Checking tiffs', disable=silence):
+        sz = f.stat().st_size
+        if sz < sz_threshold:
+            junk.append(f)
+            
+    if VERBOSE:
+        print(f'Found {len(junk)} bad tiffs.')
+        
+    return junk
+
+def del_tiffs(tiff_list: list[Path], dry_run=True):
+    if VERBOSE and dry_run:
+        print('----DRY RUN----')
+    if len(tiff_list) == 0:
+        print('Nothing to delete.')
+    else:
+        for f in tiff_list:
+            if VERBOSE:
+                print(f'Deleted: {f}')
+            if not dry_run:
+                f.unlink()
+    if VERBOSE and dry_run:
+        print('----DRY RUN----')
+                
+def make_verify_path(root, mouse, date):
+    search_path = Path(root, mouse, date)
+    if search_path.exists():
+        if VERBOSE:
+            print(f'Searching {search_path}...')
+        return search_path
+    else:
+        raise FileNotFoundError(f"Can't fine the path specified: {search_path}")
+    
+def main():
+    if platform.system() == 'Linux':
+        base_path = BASE_PATH_WSL
+    else:
+        base_path = BASE_PATH_WIN
+        
+    parser = argparse.ArgumentParser(description='Scan tiffs for junk files. Searches by file size.')
+
+    parser.add_argument('mouse', type=str)
+    parser.add_argument('date', type=str)
+    
+    parser.add_argument('-v', '--verbose', 
+                        help='print verbosely', 
+                        action='store_true')
+
+    parser.add_argument('--dryrun', 
+                        help='runs but does not delete anything',
+                        action='store_true')
+
+    parser.add_argument('--root',
+                        help='root directory to use',
+                        default=base_path)
+
+    parser.add_argument('--size',
+                        help='threshold file size in MB',
+                        default=SZ_THRESHOLD_MB,
+                        type=int)
+
+    args = parser.parse_args()
+    
+    global VERBOSE 
+    VERBOSE = args.verbose
+    
+    search_path = make_verify_path(args.root, args.mouse, args.date)
+    junk_list = check_tiffs(search_path, args.size)
+    del_tiffs(junk_list, dry_run=args.dryrun)
+    
+if __name__ == '__main__':
+    main()

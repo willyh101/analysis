@@ -1,4 +1,5 @@
 import setuptools
+from glob import glob
 
 with open('README.md', 'r') as rmf:
     readme = rmf.read()
@@ -16,5 +17,6 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url='https://github.com/willyh101/analysis',
     license='MIT',
-    packages=setuptools.find_packages()
+    packages=setuptools.find_packages(),
+    scripts=glob('bin/*')
 )

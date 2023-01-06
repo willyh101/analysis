@@ -4,14 +4,14 @@ import sys
 import shutil
 from suite2p import run_s2p
 
-sys.path.append('c:/users/will/code/holofun')
+sys.path.append('/home/will/code/holofun')
 
 from holofun.simple_guis import openfoldersgui
 from holofun.si_tiff import SItiffCore
 
 # assuming you are coming from the data drive... (and not the server)
-tiff_base = 'f:/experiments'
-result_base = 'e:/figure ground'
+tiff_base = '/mnt/data2/experiments'
+result_base = '/mnt/localdata/figure ground'
 
 default_ops = {
     # general
@@ -51,7 +51,7 @@ default_ops = {
     'neucoeff': 0.7,  # neuropil coefficient
     
     # custom settings
-    'remove_artifacts': (30,512-30)
+    'remove_artifacts': (100,512-100)
 }
 
 # prompt epoch folders and create paths

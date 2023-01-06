@@ -1,3 +1,4 @@
+from re import M
 import numpy as np
 from pathlib import Path
 
@@ -54,7 +55,10 @@ class Suite2pData:
         self.neucoeff = self.ops[0]['neucoeff']
         
         self.F_raw = self.load_traces_npy('F.npy')
-        self.Neu = self.load_traces_npy('FNeu.npy')
+        try:
+            self.Neu = self.load_traces_npy('FNeu.npy')
+        except FileNotFoundError:
+            self.Neu = self.load_traces_npy('Fneu.npy')
         self.spks = self.load_traces_npy('spks.npy')
         
         self.F = neuropil_subtract(self.F_raw, self.Neu, self.neucoeff)
@@ -150,13 +154,16 @@ class Suite2pData:
         else:
             return self.ops[plane]['meanImg_chan2']
     
-    def get_cell_mask(self, cell, bb_crop=None):
+    def get_cell_mask(self, cell, bb_crop=None, maskval='lam'):
         stat = self.stat[cell]
         ypix = stat['ypix'][~stat['overlap']]
         xpix = stat['xpix'][~stat['overlap']]
         
         im = np.zeros((self.ops[0]['Ly'], self.ops[0]['Lx']))
-        im[ypix,xpix] = stat['lam']
+        if isinstance(maskval, int):
+            im[ypix,xpix] = maskval
+        else:
+            im[ypix,xpix] = stat['lam']
         
         if bb_crop:
             x, y = self.meds[cell,:2]

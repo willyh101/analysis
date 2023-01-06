@@ -21,9 +21,10 @@ def make_mean_df(df, win, col):
     """
 
     # implemented trialwise subtraction
+    df = df.copy()
     assert len(win) == 4, 'Must give 4 numbers for window.'
-    base = df[(df.time > win[0]) & (df.time < win[1])].groupby(['cell', col, 'trial']).mean().reset_index()
-    resp = df[(df.time > win[2]) & (df.time < win[3])].groupby(['cell', col, 'trial']).mean().reset_index()
+    base = df[(df.time > win[0]) & (df.time < win[1])].groupby(['cell', col, 'trial']).mean(numeric_only=True).reset_index()
+    resp = df[(df.time > win[2]) & (df.time < win[3])].groupby(['cell', col, 'trial']).mean(numeric_only=True).reset_index()
     resp['df'] = resp['df'] - base['df']
     return resp
 

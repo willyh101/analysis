@@ -62,6 +62,28 @@ def plot_mean_dff_by_cell(trwise_data, cells=None, trials=None, xvals=None, ax=N
 
     return ax
 
+def plot_mean_dff_of_cell(trwise_data, cell, trials=None, xvals=None, ax=None, **kwargs):
+    if ax is None:
+       fig, ax = plt.subplots(1,1, figsize=(4,4), constrained_layout=True)
+       
+    if trials is None:
+        trials = np.arange(trwise_data.shape[0])
+    
+    mask = np.ix_(trials, [cell])
+    
+    mm = trwise_data[mask].mean(0).squeeze()
+    err = sem(trwise_data[mask], 0).squeeze()
+    
+    if xvals is None:
+        x = np.arange(mm.size)
+    else:
+        x = xvals
+    
+    ax.plot(x, mm, label=cell, **kwargs)
+    ax.fill_between(x, mm+err, mm-err, alpha=0.5, **kwargs)
+
+    return ax
+
 def plot_tc(d, cell, drop_grey_screen=True, ax=None, **kwargs):
     """Give a mean DataFrame and a cell number, plot the tuning curve."""
     if ax is None:

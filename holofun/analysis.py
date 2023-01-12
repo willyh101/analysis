@@ -14,17 +14,20 @@ def make_mean_df(df, win, col):
     Inputs:
         df: the dataframe
         win (tuple): start and end time in whatever 'time' is in the dataframe
-        col (str): column name that you are meaning over
+        col (str): column name that you are meaning over, can be a list
 
     Returns:
         mean dataframe
     """
+    # ensure col is a list for unpacking
+    if not isinstance(col, list):
+        col = [col]
 
     # implemented trialwise subtraction
     df = df.copy()
     assert len(win) == 4, 'Must give 4 numbers for window.'
-    base = df[(df.time > win[0]) & (df.time < win[1])].groupby(['cell', col, 'trial']).mean(numeric_only=True).reset_index()
-    resp = df[(df.time > win[2]) & (df.time < win[3])].groupby(['cell', col, 'trial']).mean(numeric_only=True).reset_index()
+    base = df[(df.time > win[0]) & (df.time < win[1])].groupby(['cell', *col, 'trial']).mean(numeric_only=True).reset_index()
+    resp = df[(df.time > win[2]) & (df.time < win[3])].groupby(['cell', *col, 'trial']).mean(numeric_only=True).reset_index()
     resp['df'] = resp['df'] - base['df']
     return resp
 

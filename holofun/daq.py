@@ -164,7 +164,7 @@ class SetupDaqFile:
             times = times[~np.isnan(times)]
             return times
         
-    def get_stims_legacy(self):
+    def get_stims_legacy(self, parse_stim_dict=True):
         print('Working on finding stimIDs using old approach...')
         with h5py.File(self.path, 'r') as f:
             all_output_names = []
@@ -229,6 +229,9 @@ class SetupDaqFile:
                 'out_num': np.array(out_num),
                 'stim_name': np.array(stim_name).squeeze().tolist(),
             }
+            
+            if parse_stim_dict:
+                out = parse_stim_data(out)
 
         return out
     

@@ -34,10 +34,11 @@ def get_ret_data(data: np.ndarray, win:tuple, locs:np.ndarray):
     return ret
     
 class Retinotopy:
-    def __init__(self, Nx:int, Ny:int, gridsize:int) -> None:
+    def __init__(self, Nx:int, Ny:int, gridsize:int, gridsample=1) -> None:
         self.Nx = Nx
         self.Ny = Ny
         self.gridsize = gridsize
+        self.gridsample = gridsample
         
         self._fitfun = None
         self.bds = None
@@ -63,8 +64,10 @@ class Retinotopy:
         
     def calculate_grid(self, expand_by=1):
             
-        x_rng = np.linspace(-(self.Nx-1)*self.gridsize/2, (self.Nx-1)*self.gridsize/2, self.Nx*expand_by)
-        y_rng = np.linspace(-(self.Ny-1)*self.gridsize/2, (self.Ny-1)*self.gridsize/2, self.Ny*expand_by)
+        x_rng = np.linspace(-(self.Nx-1)*self.gridsize/2/self.gridsample, 
+                            (self.Nx-1)*self.gridsize/2/self.gridsample, self.Nx*expand_by)
+        y_rng = np.linspace(-(self.Ny-1)*self.gridsize/2/self.gridsample, 
+                            (self.Ny-1)*self.gridsize/2/self.gridsample, self.Ny*expand_by)
         
         xx,yy = np.meshgrid(x_rng, y_rng)
         
@@ -184,6 +187,7 @@ def fit_all_ret(data, base_win, response_win, locinds, gridsize):
         'pvals': pvals,
         'rvals': rvals,
         'fits': fit_ret,
+        'mean_by_loc': ret
     }
     time.sleep(2)
     

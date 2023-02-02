@@ -90,8 +90,8 @@ def find_responsive_cells(df, col, cond, win, one_way=False, test_fxn='ttest', a
     
     test = test_funs[test_fxn]
     
-    base = df[(df.time > win[0]) & (df.time < win[1])].groupby(['cell', col, 'trial']).mean().reset_index()
-    resp = df[(df.time > win[2]) & (df.time < win[3])].groupby(['cell', col, 'trial']).mean().reset_index()['df']
+    base = df[(df.time > win[0]) & (df.time < win[1])].groupby(['cell', col, 'trial']).mean(numeric_only=True).reset_index()
+    resp = df[(df.time > win[2]) & (df.time < win[3])].groupby(['cell', col, 'trial']).mean(numeric_only=True).reset_index()['df']
 
     base = base.rename(columns={'df':'baseline'})
     resp = resp.rename('resp')

@@ -33,6 +33,7 @@ def load_ret_data(path):
         'locinds': locinds,
         'gridsize': result['sizes'],
         'Ny': locinds[:,0].max(),
-        'Nx': locinds[:,1].max()
+        'Nx': locinds[:,1].max(),
+        'gridsample': result['grid']
     }
     return out

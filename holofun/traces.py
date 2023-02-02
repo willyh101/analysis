@@ -41,9 +41,12 @@ def stim_align_trialwise(trialwise_traces, times_trial, new_start):
         new_start (int): frame number where the psths will be aligned to
     """
     psth = np.zeros_like(trialwise_traces)
-    
-    for i in range(trialwise_traces.shape[0]):
-        psth[i,:,:] = np.roll(trialwise_traces[i,:,:], -int(times_trial[i])+new_start, axis=1)
+
+    for i in range(psth.shape[0]):
+        roll_by = np.full(psth.shape[1], times_trial[i])
+        amt = -roll_by + new_start
+        amt = amt.astype(int)
+        psth[i,:,:] = roll_ind(trialwise_traces[i,:,:], amt)
         
     return psth
     
@@ -87,6 +90,9 @@ def df_add_trialwise(df, vals, col_name, **kwargs):
 
 def df_add_cellwise(df, vals, col_name, **kwargs):
     return _df_add(df, vals, col_name, on='cell', **kwargs)
+
+def df_add_condwise(df, vals, col_name, **kwargs):
+    return _df_add(df, vals, col_name, on='out_id', **kwargs)
 
 def _df_add(df, vals, col_name, on, **kwargs):
     if col_name in df:

@@ -31,8 +31,10 @@ def load_image(file_name, channel='r', plane=0, xslice=None, yslice=None):
     else:
         raise ValueError("Choose either 'r' or 'g'.")
     
+    print('Loading file...', end=' ')
     with ScanImageTiffReader(file_name) as reader:
         data = reader.data()
+    print('done.')
         
     tslice = get_tslice(file_name, plane, c)
     im_series = data[tslice,yslice,xslice]

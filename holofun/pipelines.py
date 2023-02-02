@@ -5,7 +5,7 @@ from .analysis import make_mean_df
 from .traces import (baseline_subtract, cut_psths, make_trialwise,
                      min_subtract, rolling_baseline_dff, unravel, reravel)
 from .vis.generic import find_vis_resp
-from .vis.tuning import osi, pdir, po
+from .vis.tuning import osi, pdir, po, dsi
 
 
 def process_s2p(s2p, epoch, pre_time, total_time=None, do_zscore=False):
@@ -82,10 +82,14 @@ def ori_vis_pipeline(df, analysis_window):
     osis = osi(mdf)
     mdf = mdf.join(osis, on='cell')
 
+    dsis = dsi(mdf)
+    mdf = mdf.join(dsis, on='cell')
+
     df = df.join(prefs, on='cell')
     df = df.join(orthos, on='cell')
     df = df.join(pdirs, on='cell')
     df = df.join(osis, on='cell')
+    df = df.join(dsis, on='cell')
     
     df.loc[:, 'vis_resp'] = False
     df.loc[df.cell.isin(cells), 'vis_resp'] = True

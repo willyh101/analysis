@@ -82,14 +82,16 @@ def ori_vis_pipeline(df, analysis_window):
     osis = osi(mdf)
     mdf = mdf.join(osis, on='cell')
 
-    dsis = dsi(mdf)
-    mdf = mdf.join(dsis, on='cell')
+    if mdf.ori.max() >= 180:
+        dsis = dsi(mdf)
+        mdf = mdf.join(dsis, on='cell')
+        df = df.join(dsis, on='cell')
+
 
     df = df.join(prefs, on='cell')
     df = df.join(orthos, on='cell')
     df = df.join(pdirs, on='cell')
     df = df.join(osis, on='cell')
-    df = df.join(dsis, on='cell')
     
     df.loc[:, 'vis_resp'] = False
     df.loc[df.cell.isin(cells), 'vis_resp'] = True

@@ -2,6 +2,8 @@ import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score
 from scipy import stats
 
+RNG = np.random.default_rng()
+
 def sem(data, axis=0):
     return data.std(axis)/np.sqrt(data.shape[axis])
 
@@ -65,7 +67,7 @@ def bootstrap(x, func, nsample=None, nboot=10000, **kwargs):
         y = np.random.choice(x, nsample, replace=True)
         val = func(y, **kwargs)
         sample.append(val)
-    return sample
+    return np.array(sample)
 
 def bootstrap2d(x: np.ndarray, func, axis, nsample=None, nboot=10000, **kwargs):
     rng = np.random.default_rng()
@@ -84,3 +86,10 @@ def jackknife(x, func):
     n = len(x)
     idx = np.arange(n)
     return sum(func(x[idx!=i]) for i in range(n))/float(n)
+
+def fusshle(x,y):
+    xy = np.vstack([x,y]).T.copy()
+    RNG.shuffle(xy)
+    x = xy[:,0]
+    y = xy[:,1]
+    return x,y

@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.stats as stats
 
 from .stats import sem
 
@@ -13,7 +14,7 @@ def scatter2hist(x, y, bins=(10,10), ax=None, do_log=False, **kwargs):
     ax.imshow(np.rot90(h), interpolation='nearest', **kwargs)
     return ax
     
-def plot_mean_dff(trwise_data, cells=None, trials=None, xvals=None, ax=None, **kwargs):
+def plot_mean_dff(trwise_data, cells=None, trials=None, xvals=None, ax=None, falpha=0.5, **kwargs):
     if ax is None:
        fig, ax = plt.subplots(1,1, figsize=(4,4), constrained_layout=True)
        
@@ -33,7 +34,7 @@ def plot_mean_dff(trwise_data, cells=None, trials=None, xvals=None, ax=None, **k
         x = xvals
     
     ax.plot(x, mm, **kwargs)
-    ax.fill_between(x, mm+err, mm-err, alpha=0.5, **kwargs)
+    ax.fill_between(x, mm+err, mm-err, edgecolor=None, alpha=falpha, **kwargs)
     
     return ax
 
@@ -106,7 +107,7 @@ def plot_tc(d, cell, drop_grey_screen=True, ax=None, **kwargs):
     return ax
 
 def plot_cell_ret(ret_data, ret_fit):
-    fig, ax = plt.subplots(1,3, figsize=(10,10))
+    fig, ax = plt.subplots(1,3, figsize=(4,4))
 
     x,y,_ = ret_fit.calculate_grid()
     ext = (x.min(), x.max(), y.min(), y.max())
@@ -120,7 +121,7 @@ def plot_cell_ret(ret_data, ret_fit):
     for a in ax:
         a.axis('off')
         
-    fig.subplots_adjust(wspace=.01, hspace=.01)
+    # fig.subplots_adjust(wspace=.01, hspace=.01)
     plt.show()
     
 def update_all(axes, **kwargs):
@@ -128,3 +129,75 @@ def update_all(axes, **kwargs):
         for k,v in kwargs.items():
             fxn = eval(f'ax.{k}')
             fxn(v)
+            
+def scatter_eq_axis(x, y, xy_max=None, xy_min=0, fit=False, fit_color='r', nticks=3, kde=False,
+                    ax=None, **kwargs):
+    """
+    Plot a scatter plot relating X and Y with equal axis sizes and optionally a reference line and
+    optionally a fit line.
+
+    Args:
+        x (array-like): x-data
+        y (array-like): y-data
+        xy_max (int/float): max value for x and y limits
+        xy_min (int, optional): min value for x and y limits. Defaults to 0.
+        fit (bool, optional): Whether to determine the linear fit. Defaults to False.
+        fit_color (str, optional): Color of fitline if enabled. Defaults to 'r'.
+        nticks (int, optional): Number of ticks to plot on each axis. Defaults to 4.
+        ax (matplotlib.axes, optional): Axes to plot on. Defaults to None.
+
+    Returns:
+        modified plotting axes
+    """
+    if ax is None:
+        ax = plt.gca()
+        
+    kwargs.setdefault('s', 6)
+    
+    if xy_max is None:
+        xy_max = np.nanmax([x,y]) * 1.1
+        
+    if kde:
+        x,y,cdata = estimate_kde(x,y)
+        kwargs.pop('color',None)
+        kwargs['c'] = cdata
+    
+    ax.scatter(x, y, **kwargs)
+    ax.plot([xy_min,xy_max], [xy_min,xy_max], c='k', ls='--')
+    
+    ax.set_xlim(xy_min, xy_max)
+    ax.set_ylim(xy_min, xy_max)
+
+    if nticks:
+        ax.locator_params(axis='both', nbins=nticks)
+    ax.set_aspect('equal', 'box')
+    
+    if fit:
+        m,b = np.polyfit(x, y, 1)
+        xrng = np.arange(0,xy_max,0.01)
+        yfit = (m*xrng)+b
+        ax.plot(xrng, yfit, c=fit_color)
+        
+    return ax
+
+def estimate_kde(x, y):
+    xy = np.vstack([x, y])
+    z = stats.gaussian_kde(xy)(xy)
+    idx = z.argsort()
+    x,y,z = xy[0,idx], xy[1,idx], z[idx]
+    return x,y,z
+
+def df_scatter_eq(x, y, data, kde=False, **kwargs):
+    xdata = data.loc[:,x]
+    ydata = data.loc[:,y]
+    
+    if kde:
+        xdata,ydata,cdata = estimate_kde(xdata,ydata)
+        kwargs.pop('color')
+        kwargs['c'] = cdata
+        
+    ax = scatter_eq_axis(xdata, ydata, **kwargs)
+    ax.set_xlabel(x)
+    ax.set_ylabel(y)
+    
+    return ax

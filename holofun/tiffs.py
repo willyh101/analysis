@@ -40,7 +40,8 @@ class SItiff(SItiffCore):
             mimg = exposure.rescale_intensity(mimg, scaling)
             
         if as_rgb:
-            rgb_im = np.zeros((*mimg.shape,3))
+            mimg = exposure.rescale_intensity(mimg, out_range=np.uint8)
+            rgb_im = np.zeros((*mimg.shape,3), dtype=np.uint8)
             if not rgb_ch:
                 if channel == 1:
                     rgb_ch = 0
@@ -199,7 +200,7 @@ class RGBImgViewer:
             self.raw_data = create_rgb_img(*args)
         elif len(args) == 1:
             if len(args[0].shape) == 3:
-                assert args[0].shape == 3, 'Data must be (m,n,3) for single argument ndarry.'
+                assert args[0].shape[-1] == 3, 'Data must be (m,n,3) for single argument ndarry.'
                 self.raw_data = args[0]
             else:
                 self.raw_data
@@ -218,7 +219,7 @@ class RGBImgViewer:
         if ax is None:
             ax = plt.gca()
         
-        if ch is not None:
+        if ch is None:
             rgb = self.img
         else:
             rgb = np.zeros_like(self.img)
@@ -232,7 +233,7 @@ def add_scalebar(ax, um_length, fs=18, lw=8, **kwargs):
     fontprops = fm.FontProperties(size=fs)
     scalebar = AnchoredSizeBar(ax.transData, 
                             px_length,
-                            f'{um_length} $\mu$m',
+                            f'{um_length} µm',
                             'lower right',
                             pad=0.2,
                             borderpad=0.2,
@@ -249,7 +250,7 @@ def add_label(ax, txt, c='white', sz=12, font_kw=None, pad=0.3, **kwargs):
         'color': c
     }
     if font_kw is not None:
-        font_dict = {**font_kw}
+        font_dict = {**font_kw, **font_dict}
         
     kwargs.setdefault('pad',pad)
     kwargs.setdefault('borderpad', pad)

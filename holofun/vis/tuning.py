@@ -7,6 +7,9 @@ import scipy.optimize as sop
 
 from ..stats import rsquared, sumsquares, von_mises_dir
 
+def mean_responses_to_mdf(mresp: np.ndarray):
+    pass
+
 def po(mdf: pd.DataFrame):
     """
     Takes a mean dataframe (see meanby) and returns preferred and
@@ -237,3 +240,17 @@ class vonMises:
             R2:     {self.r2:.5f}
             """
         return inspect.cleandoc(txt)
+
+def get_osi_vecsum(arr, dirs):
+    th = np.deg2rad(np.mod(dirs,180))
+    sinterm = np.sin(2*th).dot(arr)
+    costerm = np.cos(2*th).dot(arr)
+    sumterm = np.sum(arr)
+    val = np.sqrt(costerm**2 + sinterm**2)/sumterm
+    return val
+
+def get_cmi(cross, iso):
+    return ((cross-iso)/(cross+iso))
+
+def get_smi(ctr, surr):
+    return ((ctr-surr)/(ctr+surr))

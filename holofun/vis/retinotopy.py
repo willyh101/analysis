@@ -1,6 +1,6 @@
 import inspect
 import time
-
+import logging
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize as sop
@@ -25,6 +25,12 @@ def get_ret_data(data: np.ndarray, win:tuple, locs:np.ndarray):
     Ny = locs[:,0].max()
     Nx = locs[:,1].max()
     ret = np.zeros((data_.shape[1], Ny, Nx))
+    
+    if data_.shape[0] > locs.shape[0]:
+        logging.warning('Ret locs less than number of trials collected! Auto-adjusting...')
+        locs = np.tile(locs, (30,1))
+        locs = locs[:data_.shape[0],:]
+    
     for j in range(Ny):
         for k in range(Nx):
             these_trials = (locs[:,0] == j+1) & (locs[:,1] == k+1)
@@ -153,7 +159,7 @@ class Retinotopy:
             """
         return inspect.cleandoc(txt)
     
-def fit_all_ret(data, base_win, response_win, locinds, gridsize):
+def fit_all_ret(data, base_win, response_win, locinds, gridsize, **kwargs):
     
     Ny = locinds[:,0].max()
     Nx = locinds[:,1].max()
@@ -167,7 +173,7 @@ def fit_all_ret(data, base_win, response_win, locinds, gridsize):
     fit_ret = []
     
     for i,r in enumerate(tqdm(ret, desc='Fitting retinotopy: ')):
-        rfit = Retinotopy(Nx, Ny, gridsize)
+        rfit = Retinotopy(Nx, Ny, gridsize, **kwargs)
         
         try:
             rfit.fit(r)

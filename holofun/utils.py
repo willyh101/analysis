@@ -4,7 +4,6 @@ import time
 import functools
 import os
 import logging
-from collections import defaultdict
 
 def make_results_folder(root, mouse, date, folder_name='results', chdir=True):
     """
@@ -96,7 +95,7 @@ def verifyrun(func):
 def replace_tup_ix(tup, ix, val):
     return tup[:ix] + (val,) + tup[ix+1:]
 
-def nbsetup(despine=True, constrained=True):
+def nbsetup(despine=True, constrained=True, font=None):
     try:
         if __IPYTHON__:
             get_ipython().magic('load_ext autoreload')
@@ -121,12 +120,13 @@ def nbsetup(despine=True, constrained=True):
 
     try:
         import matplotlib as mpl
-        # mpl.rcParams['savefig.dpi'] = 600 # default resolution for saving images in matplotlib
+        mpl.rcParams['savefig.dpi'] = 600 # default resolution for saving images in matplotlib
         mpl.rcParams['savefig.format'] = 'pdf' # defaults to png for saved images (SVG is best, however)
         mpl.rcParams['savefig.bbox'] = 'tight' # so saved graphics don't get chopped
+        mpl.rcParams['savefig.transparent'] = False
         mpl.rcParams['image.cmap'] = 'viridis'
         mpl.rcParams['ps.fonttype'] = 42
-        mpl.rcParams['savefig.transparent'] = True
+        mpl.rcParams['savefig.transparent'] = False
         mpl.rcParams['pdf.fonttype'] = 42
         # add to remove seaborn dependency
         if despine:
@@ -135,6 +135,9 @@ def nbsetup(despine=True, constrained=True):
         # mpl.rcParams['font.size'] = 10
         if constrained:
             mpl.rcParams['figure.constrained_layout.use'] = True
+        if font:
+            mpl.rcParams['font.sans-serif'] = [font]
+            mpl.rcParams['font.size'] = 12
     except ModuleNotFoundError:
         logging.warning('Failed to import matplotlib.')
 
@@ -201,3 +204,24 @@ def make_paths(mouse, date, result_base, tiff_base='f:/experiments',
 
 def cm_to_inch(value):
     return value/2.54
+
+def get_cell_array_data(field, mat_path):
+    import h5py
+    with h5py.File(mat_path, 'r') as f:
+        data = []
+        for ref in f[field][:].squeeze():
+            d = f[ref][:].squeeze()
+            data.append(d)
+    return data
+
+def failsgraceful(func):
+    """Gracefully fails the wrapped function. Useful for io calls. Returns None on fail."""
+    @functools.wraps(func)
+    def wrapper_failsgraceful(*args, **kwargs):
+        try:
+            out = func(*args, **kwargs)
+        except:
+            logging.warning(f'Failed to run <{func.__module__}.{func.__name__}>')
+            out = None
+        return out
+    return wrapper_failsgraceful

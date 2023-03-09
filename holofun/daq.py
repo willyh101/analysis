@@ -157,13 +157,15 @@ class SetupDaqFile:
             weights = f[ref]['roiWeights'][:].squeeze()
         return weights
     
-    def get_stim_times(self):
+    def get_stim_times(self, return_nans=True):
         with h5py.File(self.path, 'r') as f:
             ref = f['ExpStruct/Holo/holoRequests'][self.hrnum,0]
             times = f[ref]['bigListOfFirstStimTimes'][0,:]
-            times = times[~np.isnan(times)]
-            return times
-        
+            if return_nans:
+                return times
+            else:
+                return times[~np.isnan(times)]
+            
     def get_stims_legacy(self, parse_stim_dict=True):
         print('Working on finding stimIDs using old approach...')
         with h5py.File(self.path, 'r') as f:

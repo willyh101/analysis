@@ -91,8 +91,8 @@ def df_add_trialwise(df, vals, col_name, **kwargs):
 def df_add_cellwise(df, vals, col_name, **kwargs):
     return _df_add(df, vals, col_name, on='cell', **kwargs)
 
-def df_add_condwise(df, vals, col_name, **kwargs):
-    return _df_add(df, vals, col_name, on='out_id', **kwargs)
+def df_add_condwise(df, vals, col_name, on_col='out_id', **kwargs):
+    return _df_add(df, vals, col_name, on=on_col, **kwargs)
 
 def _df_add(df, vals, col_name, on, **kwargs):
     if col_name in df:

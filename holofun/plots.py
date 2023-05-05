@@ -201,3 +201,11 @@ def df_scatter_eq(x, y, data, kde=False, **kwargs):
     ax.set_ylabel(y)
     
     return ax
+
+def histfill(vals, bw=100, ax=None, fill_alpha=0.4, label=None, color=None, **kwargs):
+    if ax is None:
+        ax = plt.gca()
+    ys, xs = np.histogram(vals, bw)
+    ax.fill_between(xs[1:], ys, alpha=fill_alpha, color=color, **kwargs)
+    ax.plot(xs[1:], ys, label=label, color=color)
+    return ax

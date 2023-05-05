@@ -128,6 +128,7 @@ def nbsetup(despine=True, constrained=True, font=None):
         mpl.rcParams['ps.fonttype'] = 42
         mpl.rcParams['savefig.transparent'] = False
         mpl.rcParams['pdf.fonttype'] = 42
+        mpl.rcParams['figure.figsize'] = (4,3)
         # add to remove seaborn dependency
         if despine:
             mpl.rcParams['axes.spines.top'] = False

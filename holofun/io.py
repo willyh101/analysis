@@ -1,7 +1,9 @@
 import numpy as np
 import h5py
 import scipy.io as sio
+from .utils import failsgraceful
 
+@failsgraceful
 def load_fg_result(path):
     with h5py.File(path) as h:
         out = {
@@ -15,6 +17,7 @@ def load_fg_result(path):
         }
     return out
 
+@failsgraceful
 def load_ori_data(path):
     mat = sio.loadmat(path, squeeze_me=True)['result']
     stims = mat['stimParams'].item()
@@ -26,6 +29,7 @@ def load_ori_data(path):
     out['ori'][np.isnan(out['ori'])] = -1
     return out
 
+@failsgraceful
 def load_ret_data(path):
     result = sio.loadmat(path, squeeze_me=True)['result'][()]
     locinds = result['locinds']

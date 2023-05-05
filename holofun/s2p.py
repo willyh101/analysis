@@ -1,8 +1,7 @@
-from re import M
 import numpy as np
 from pathlib import Path
 
-from .tiffs import get_crop_mask
+from .si_tiff import get_crop_mask
 from .simple_guis import openfoldergui
 
 def eucl_motion(x_off, y_off):
@@ -156,8 +155,8 @@ class Suite2pData:
     
     def get_cell_mask(self, cell, bb_crop=None, maskval='lam'):
         stat = self.stat[cell]
-        ypix = stat['ypix'][~stat['overlap']]
-        xpix = stat['xpix'][~stat['overlap']]
+        ypix = stat['ypix']#[~stat['overlap']]
+        xpix = stat['xpix']#[~stat['overlap']]
         
         im = np.zeros((self.ops[0]['Ly'], self.ops[0]['Lx']))
         if isinstance(maskval, int):

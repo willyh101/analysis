@@ -16,6 +16,7 @@ class SetupDaqFile:
         
         self.rate = 20000
         self.pt_flip_ch = 5
+        self.pt_clk_ch = 4
         self.pt_cond_ch = 3
         self.run_ch = 0
         self.wheel_circum = 47.75
@@ -88,6 +89,20 @@ class SetupDaqFile:
                 vis_stims.append(count_daq_pulses(arr))
         return np.array(vis_stims)
     
+    def get_binary_vis_stim(self):
+        with h5py.File(self.path, 'r') as f:
+            vis_stims = []
+            for s in self.sweeps:
+                stims = f[f['ExpStruct/digitalSweeps'][s][0]][self.pt_cond_ch,:]
+                stims = np.where(np.diff(stims)==1)[0]
+                clk = f[f['ExpStruct/digitalSweeps'][s][0]][self.pt_clk_ch,:]
+                clk = np.where(np.diff(clk)==1)[0]
+                b_arr = np.isin(clk, stims).astype(int)
+                # print(len(b_arr))
+                val = np.sum((2**np.arange(len(b_arr)))[::-1]*b_arr)
+                vis_stims.append(val)
+        return np.array(vis_stims)
+                
     def get_vis_times(self):
         with h5py.File(self.path, 'r') as f:
             start = []

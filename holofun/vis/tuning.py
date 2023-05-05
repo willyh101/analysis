@@ -110,10 +110,27 @@ def osi(mdf:pd.DataFrame):
     
     return osi
 
+def osi_vecsum(mdf:pd.DataFrame):
+    tc = get_tc(mdf, drop_grey_screen=True, ori=False)
+    
+    osis = []
+    for cell in tc.cell.unique():
+        temp = tc[tc.cell == cell].copy()
+        temp['df'] -= temp['df'].min()
+        dirs = temp.ori.unique()
+        vals = temp['df']
+        osi = _osi_vector_sum(vals, dirs)
+        osis.append(osi)
+    osi = pd.Series(osis, name='osi_vecsum')
+    return osi
+
 def _osi(preferred_responses, ortho_responses):
     """This is the hard-coded osi function."""
     return ((preferred_responses - ortho_responses)
             / (preferred_responses + ortho_responses))
+    
+def _osi_vector_sum(mean_tc, dirs):
+    return get_osi_vecsum(mean_tc, dirs)
     
 def _global_osi(tuning_curve):
     # TODO

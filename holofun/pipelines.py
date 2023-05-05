@@ -5,10 +5,23 @@ from .analysis import make_mean_df
 from .traces import (baseline_subtract, cut_psths, make_trialwise,
                      min_subtract, rolling_baseline_dff, unravel, reravel)
 from .vis.generic import find_vis_resp
-from .vis.tuning import osi, pdir, po, dsi
+from .vis.tuning import osi, pdir, po, dsi, osi_vecsum
 
 
 def process_s2p(s2p, epoch, pre_time, total_time=None, do_zscore=False):
+    """Process a suite2p object for PSTH analysis.
+    
+    Args:
+        s2p (Suite2p): suite2p object
+        epoch (str): epoch to analyze
+        pre_time (float): time before event to include in PSTH
+        total_time (float): total time to include in PSTH. If None, uses length of epoch
+        do_zscore (bool): whether to zscore traces
+    
+    Returns:
+        traces (np.array): cell x time array of traces
+        trwise (np.array): cell x trial x time array of PSTHs
+    """
     # get traces
     raw_traces = s2p.cut_traces_epoch(epoch)
     traces = min_subtract(raw_traces)
@@ -87,11 +100,14 @@ def ori_vis_pipeline(df, analysis_window):
         mdf = mdf.join(dsis, on='cell')
         df = df.join(dsis, on='cell')
 
+    osi2 = osi_vecsum(mdf)
+    mdf = mdf.join(osi2, on='cell')
 
     df = df.join(prefs, on='cell')
     df = df.join(orthos, on='cell')
     df = df.join(pdirs, on='cell')
     df = df.join(osis, on='cell')
+    df = df.join(osi2, on='cell')
     
     df.loc[:, 'vis_resp'] = False
     df.loc[df.cell.isin(cells), 'vis_resp'] = True

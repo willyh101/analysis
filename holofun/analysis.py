@@ -2,6 +2,7 @@ import numpy as np
 import scipy.stats as stats
 import pandas as pd
 from sklearn.neighbors import KDTree
+import scipy.optimize as sop
 
 from holofun.constants import PX_PER_UM, UM_PER_PIX
 from holofun.traces import df_add_cellwise
@@ -26,8 +27,8 @@ def make_mean_df(df, win, col):
     # implemented trialwise subtraction
     df = df.copy()
     assert len(win) == 4, 'Must give 4 numbers for window.'
-    base = df[(df.time > win[0]) & (df.time < win[1])].groupby(['cell', *col, 'trial']).mean(numeric_only=True).reset_index()
-    resp = df[(df.time > win[2]) & (df.time < win[3])].groupby(['cell', *col, 'trial']).mean(numeric_only=True).reset_index()
+    base = df[df.time.between(win[0], win[1])].groupby(['cell', *col, 'trial']).mean().reset_index()
+    resp = df[df.time.between(win[2], win[3])].groupby(['cell', *col, 'trial']).mean().reset_index()
     resp['df'] = resp['df'] - base['df']
     return resp
 
@@ -77,7 +78,33 @@ def match_cells(meds, targs, threshold=15):
     locs, *_ = coords2cells(targs, meds, threshold)
     matches = np.concatenate([np.where(np.all(meds == locs[m,:], axis=1))[0] for m in range(locs.shape[0])])
     return matches
-    
+
+def match_cells_hungarian(meds, targs, threshold=15):
+    # quick hack for multiplane
+    meds = meds.copy()
+    targs = targs.copy()
+    meds[:,2] *= 30
+    targs[:,2] *= 30
+    ds = []
+    for t in targs:
+        dist = np.linalg.norm(meds-t, axis=1)
+        ds.append(dist)
+    ds = np.array(ds)
+
+    hungm = sop.linear_sum_assignment(ds)
+    hungd = ds[hungm]
+    below_thresh = hungd < threshold
+    _,hungi = hungm
+    return hungi[below_thresh], below_thresh.nonzero()[0]
+
+def hungarian_matching(subset, superset):
+    # compute distance matrix for each match to make cost function
+    ds = []
+    for t in subset:
+        dist = np.linalg.norm(superset-t, axis=1)
+        ds.append(dist)
+    ds = np.array(ds)
+    return sop.linear_sum_assignment(ds), ds
 
 def find_responsive_cells(df, col, cond, win, one_way=False, test_fxn='ttest', alpha=0.05):
     

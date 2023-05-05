@@ -93,3 +93,15 @@ def fusshle(x,y):
     x = xy[:,0]
     y = xy[:,1]
     return x,y
+
+def splitcorr(arr, frac=0.5, nboot=10000):
+    """arr: n (trials) x m (frames) for single cell"""
+    ccs = []
+    for i in range(nboot):
+        nchoose = int(arr.shape[0]*frac)
+        perm = RNG.permutation(np.arange(arr.shape[0]))
+        a1 = arr[perm[:nchoose],:].mean(axis=0)
+        a2 = arr[perm[nchoose:],:].mean(axis=0)
+        cc = stats.pearsonr(a1,a2)[0]
+        ccs.append(cc)
+    return np.array(ccs)

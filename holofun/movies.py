@@ -48,7 +48,7 @@ def make_mean_movie(mov_array, tiff_lengths):
 def play_movie(mov, fps):
     update_ms = int((1/fps)*1000)
     
-    fig, ax = plt.subplots(1,1, figsize=(8,8), dpi=300)
+    fig, ax = plt.subplots(1,1, figsize=(4,4), dpi=120)
     plt.close()
     
     ax.set_xticks([])

@@ -199,7 +199,23 @@ def fit_all_ret(data, base_win, response_win, locinds, gridsize, **kwargs):
     
     return out
 
-def find_center_cells(ctr_rfs, ctr_sz=7, ctr_fov=(0,0)):
+def find_center_cells(ctr_rfs: np.ndarray, ctr_sz=7, ctr_fov=(0,0)) -> np.ndarray:
+    """
+    Finds cells aligned to the retinotopic center. Returns a boolean of center aligned cells.
+
+    Args:
+        ctr_rfs (np.ndarray): xy coordinates of fit receptive field centers. (cell x XY)
+        ctr_sz (int, optional): size of the center you want to select for. Defaults to 7.
+        ctr_fov (tuple, optional): location of the center in visual degrees. Defaults to (0,0).
+    """
+    
+    # calculate distance from ctr_fov
+    dist = np.linalg.norm(ctr_rfs - np.array(ctr_fov), axis=1)
+    ctr_cells = dist < ctr_sz
+    
+    return ctr_cells
+
+def find_center_cells_box(ctr_rfs, ctr_sz=7, ctr_fov=(0,0)):
     """
     Finds cells aligned to the retinotopic center. Returns a boolean of center aligned cells.
 

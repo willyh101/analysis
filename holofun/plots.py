@@ -95,7 +95,7 @@ def plot_tc(d, cell, drop_grey_screen=True, ax=None, **kwargs):
         
     m = vals[vals.cell == cell].groupby('ori').mean()['df']
     e = vals[vals.cell == cell].groupby('ori').sem()['df']
-    xs = vals.ori.unique()
+    xs = vals[vals.cell == cell].groupby('ori').mean().index
     
     kwargs.setdefault('linewidth', 2)
     

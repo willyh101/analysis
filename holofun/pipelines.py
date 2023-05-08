@@ -1,5 +1,6 @@
 import pandas as pd
 import scipy.stats as stats
+import numpy as np
 
 from .analysis import make_mean_df
 from .traces import (baseline_subtract, cut_psths, make_trialwise,
@@ -59,7 +60,8 @@ def process_oasis(s2p, epoch, pre_time, penalty=0, optimize_g=True, as_trialwise
     
     return c,s,p
 
-def ori_vis_pipeline(df, analysis_window):
+def ori_vis_pipeline(df: pd.DataFrame, 
+                     analysis_window: tuple | np.ndarray) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Runs the visual analysis pipeline on a DataFrame. Creates and returns
     the mean DataFrame, finds visually responsive cells, finds preferred and

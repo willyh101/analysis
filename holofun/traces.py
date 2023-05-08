@@ -27,7 +27,7 @@ def make_trialwise(traces, trial_lengths):
     traces = np.array([a[:, :shortest] for a in traces])
     return traces
 
-def stim_align_trialwise(trialwise_traces, times_trial, new_start):
+def stim_align_trialwise(trialwise_traces, times_trial, new_start=6):
     """
     Aligns to stimulus onset that is synchronous for all cells (eg. visual stimulus). Takes
     trialwise data (eg. trial x cell x time array) and rolls data around to other side array.
@@ -80,6 +80,8 @@ def make_dataframe(traces, fr, stim_id, stim_name='trial_id'):
     df = pd.melt(df, ('dim_1', 'dim_2'))
     df = df.rename(columns = {'dim_1':'cell', 'dim_2':'trial', 'variable':'frame', 'value':'df'})
     df['time'] = df['frame']/fr
+    df['time'] = df['time'].astype(float)
+    df['frame'] = df['frame'].astype(int)
 
     # add stims/trial ids
     df = df.join(pd.Series(stim_id, name=stim_name, dtype=int), on='trial')

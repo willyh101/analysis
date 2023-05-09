@@ -1,17 +1,17 @@
-import pickle
-from pathlib import Path
-
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.offsetbox import AnchoredText
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
-from ScanImageTiffReader import ScanImageTiffReader
 from skimage import exposure
-from tqdm import tqdm
 
 from .constants import PX_PER_UM
-from .si_tiff import SItiffCore, get_tslice
+from .si_tiff import (SItiffCore, 
+                      get_tslice, 
+                      slice_movie, 
+                      count_tiff_lengths, 
+                      get_crop_mask, 
+                      tiffs2array)
 from .simple_guis import openfilegui
 
 class SItiff(SItiffCore):
@@ -114,73 +114,6 @@ class SItiff(SItiffCore):
         print(f'Loading tiff: {path}')
         return cls(path)
 
-def slice_movie(mov_path, x_slice, y_slice, t_slice) -> np.ndarray:
-    """
-    Slice a single tiff along x, y, and time dims. Time dim must account for number of channels and
-    z-planes. slice((z_idx*nchannels)+channel, -1, nplanes*nchannels)
-
-    Args:
-        mov_path (str): path to movie
-        x_slice (slice): slice along x-axis
-        y_slice (slice): slice along y-axis
-        t_slice (slice): slice along t-axis
-
-    Returns:
-        np.array: array of sliced movie
-    """
-    with ScanImageTiffReader(mov_path) as reader:
-        data = reader.data()
-        data = data[t_slice, y_slice, x_slice]
-    return data
-
-def count_tiff_lengths(movie_list, save=False):
-    """
-    Counts the length of tiffs for a single plane and channel to get trial lenths. Optionally save
-    the data to dist as a pickle.
-
-    Args:
-        movie_list (list): list of str or Path pointing to the tiffs to count.
-        save (bool or str, optional): Whether to save the file. can either set to True to save in
-                                      in the folder with the counted tiffs or specify save location
-                                      with a string. Defaults to False.
-
-    Returns:
-        numpy array of tiff/trial lengths
-    """
-    
-    first_tiff = SItiff(movie_list[0])
-    t_slice = get_tslice(0, 0, first_tiff.nchannels, first_tiff.nplanes)
-    nframes = [slice_movie(str(mov), slice(None), slice(None), t_slice).shape[0] for mov in tqdm(movie_list, desc="Counting Tiffs: ")]
-    
-    if save:
-        if isinstance(save, str):
-            save_path = Path(save, 'tiff_lengths.pickle')
-        else:
-            save_path = Path(first_tiff.path).parent/'tiff_lengths.pickle'
-            
-        with open(save_path, 'wb') as f:
-            pickle.dump(nframes, f)
-    
-    return np.array(nframes)
-
-def tiffs2array(movie_list, x_slice, y_slice, t_slice):
-    data = [slice_movie(str(mov), x_slice, y_slice, t_slice) for mov in movie_list]
-    return np.concatenate(data)
-
-def get_crop_mask(Cx, Cy, bb):
-    """
-    Returns a mask to crop an image around a centered x,y point. Uses advanced indexing.
-
-    Args:
-        Cx (int, float): center X location
-        Cy (int, float): center Y location
-        bb (int): bounding box on either side of Cx, Cy
-    """
-    xs = np.arange(Cx-bb, Cx+bb, dtype=int)
-    ys = np.arange(Cy-bb, Cy+bb, dtype=int)
-    mask = np.ix_(ys,xs)
-    return mask
-
 def create_rgb_img(*args):
     for arg in args:
         if arg is not None:
@@ -258,3 +191,28 @@ def add_label(ax, txt, c='white', sz=12, font_kw=None, pad=0.3, **kwargs):
     label = AnchoredText(txt, prop=font_dict, frameon=False, **kwargs)
     ax.add_artist(label)
     return ax
+
+def calc_metrics(sample: np.ndarray, perc_min=3, perc_max=90):
+    _var = sample.var(axis=0).flatten()
+    _mean = sample.mean(axis=0).flatten()
+    _var_scale = np.percentile(_var, [perc_min, perc_max])
+    _mean_scale = np.percentile(_mean, [perc_min, perc_max])
+    _var_bool = np.logical_and(_var > _var_scale[0], _var < _var_scale[1])
+    _mean_bool = np.logical_and(_mean > _mean_scale[0], _mean < _mean_scale[1])
+    _no_outliers = np.logical_and(_var_bool, _mean_bool)
+    _var_filt = _var[_no_outliers]
+    _mean_filt = _mean[_no_outliers]
+    _mat = np.vstack([_mean_filt, np.ones(len(_mean_filt))]).T
+    slope, offset = np.linalg.lstsq(_mat, _var_filt, rcond=None)[0]
+    background_noise = -offset/slope
+    flux = (sample.flatten()-background_noise)/slope
+    snr = sample.mean(axis=(1,2))/sample.std(axis=(1,2))
+    return {
+        'slope': slope,
+        'offset': offset,
+        'mean': _mean_filt,
+        'var': _var_filt,
+        'bkg': background_noise,
+        'flux': flux,
+        'snr': snr
+    }

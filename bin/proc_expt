@@ -33,6 +33,11 @@ ops_to_use = 'default_ops'
 # size for junk tiffs
 sz_threshold_mb = 10
 
+# what folders to always ignore and exclude from s2p
+ignore_folders = [
+    'img',
+]
+
 
 ###---- RUN SCRIPT ----###
 parser = argparse.ArgumentParser(description="""Move data from server to desktop for a given experiment.\n
@@ -57,3 +62,4 @@ if not src.exists():
     raise FileNotFoundError(f'Experiment not found at remote path {src}')
 
 # ask about epochs
+# note: epochs transferred will always be processed in this configuration

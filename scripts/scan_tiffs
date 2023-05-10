@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+
+import argparse
+from pathlib import Path
+import sys
+from ScanImageTiffReader import ScanImageTiffReader
+import tifffile
+import logging
+import traceback
+
+logformat = '{levelname:8}:: {message}'
+logging.basicConfig(format=logformat, style='{')
+
+# mouse = 'w59_1'
+# date = '20230425'
+tiff_root = '/mnt/data2/experiments'
+
+parser = argparse.ArgumentParser(description='Scan for corrupted tiffs in directories.')
+parser.add_argument('mouse', type=str)
+parser.add_argument('date', type=str)
+parser.add_argument('-v', '--verbose', action='store_true')
+args = parser.parse_args()
+
+if args.verbose:
+    VV = True
+else:
+    VV = False
+
+mouse = args.mouse
+date = args.date
+
+scan_files = Path(tiff_root, mouse, date).rglob('*.tif*')
+
+def try_scanimagetiff(file: Path):
+    try:
+        with ScanImageTiffReader(str(file)) as reader:
+            data = reader.data()
+        return 0
+    except KeyboardInterrupt:
+        print('stopped scanning.')
+        sys.exit()
+    except Exception as e:
+        logging.error(f'ScanImageTiffReader failed to open: {file.parent.stem}/{file.name}')
+        if VV:
+            traceback.print_exc()
+        return -1
+    
+def try_tifffile(file: Path):
+    try:
+        tifffile.imread(file)
+        return 0
+    except KeyboardInterrupt:
+        print('USER ABORT -- stopped scanning.')
+        sys.exit()
+    except Exception:
+        logging.error(f'tifffile failed to open: {file.parent.stem}/{file.name}')
+        if VV:
+            traceback.print_exc()
+        return -1
+    
+count_si = []
+count_tf = []
+print('scanning tiffs.')
+for i,file in enumerate(scan_files):
+
+    # try si tiff reader first, as it is faster
+    x = try_scanimagetiff(file)
+    count_si.append(x)
+
+    # if it fails, fall back onto
+    if x == -1:
+        y = try_tifffile(file)
+        count_tf.append(y)
+    
+    # update counted to confirm everything is still going
+    if i % 100 == 0:
+        print(f'{i} files scanned.')
+
+# cleanup and quit
+print('scan complete...\n')
+print(f'scanimage-tiff-reader failed to open {sum(count_si)*-1} files.')
+print(f'tifffile failed to open {sum(count_tf)*-1} files.')

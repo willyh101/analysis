@@ -209,3 +209,9 @@ def histfill(vals, bw=100, ax=None, fill_alpha=0.4, label=None, color=None, **kw
     ax.fill_between(xs[1:], ys, alpha=fill_alpha, color=color, **kwargs)
     ax.plot(xs[1:], ys, label=label, color=color)
     return ax
+
+def catscatter(ydatas, jitter=0.2, **kwargs):
+    ncats = len(ydatas)
+    xpts = []
+    for y in ydatas:
+        x = np.random.random(size=y.size)

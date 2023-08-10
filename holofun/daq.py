@@ -59,7 +59,7 @@ class SetupDaqFile:
         
     def get_hrnum(self):
         with h5py.File(self.path, 'r') as f:
-            hr_nums =  f['ExpStruct/Holo/Sweeps_holoRequestNumber'][:].squeeze().astype(int)[self.sweeps]
+            hr_nums =  f['ExpStruct/Holo/Sweeps_holoRequestNumber'][:].squeeze().astype('uint8')[self.sweeps]
             try:
                 assert np.all(hr_nums == hr_nums[0]), 'All holoRequests must be equal within an epoch. Check your epochs/sweep numbers.'
                 hrnum = hr_nums[0] - 1 # just take the first hr number from the list
@@ -147,7 +147,7 @@ class SetupDaqFile:
     def get_out_id(self):
         """This should ID stims trialwise."""
         with h5py.File(self.path, 'r') as f:
-            all_outs = f['ExpStruct/outID'][:].squeeze().astype(int)
+            all_outs = f['ExpStruct/outID'][:].squeeze().astype(np.int)
             outs_this_epoch = all_outs[self.sweeps]
         return outs_this_epoch
     
@@ -155,13 +155,13 @@ class SetupDaqFile:
         with h5py.File(self.path, 'r') as f:
             ref = f['ExpStruct/Holo/holoRequests'][self.hrnum,0]
             rois_ref = f[ref]['rois'][:].squeeze()
-            rois = [f[r][:].reshape((-1)).astype(int) for r in rois_ref]
+            rois = [f[r][:].reshape((-1)).astype(np.int) for r in rois_ref]
         return rois
             
     def get_targets(self):
         with h5py.File(self.path, 'r') as f:
             ref = f['ExpStruct/Holo/holoRequests'][self.hrnum,0]
-            targets = f[ref]['targets'][:].T.astype(int)
+            targets = f[ref]['targets'][:].T.astype(np.int)
             targets[targets < 0] = 0
             targets[:] = targets[:, [1,0,2]] # puts them in x,y,z
         return targets
@@ -194,7 +194,7 @@ class SetupDaqFile:
             
             # get the stim tags and calculate the unique stims
             stim_tags = f['ExpStruct/stim_tag'][:].squeeze()
-            unique_stims = np.unique(stim_tags[self.sweeps]).astype(int)
+            unique_stims = np.unique(stim_tags[self.sweeps]).astype('int8')
             output_patterns = f['ExpStruct/output_patterns'][:].squeeze()
             output_num = []
             output_name = []
@@ -294,7 +294,7 @@ class SetupDaqFile:
 
 def count_daq_pulses(sweep):
     npulses = np.diff(sweep==1).sum()/2
-    return int(npulses)
+    return np.int(npulses)
 
 def parse_stim_data(stim_data):
     names = stim_data['stim_name']

@@ -1,8 +1,6 @@
-from turtle import back
 import numpy as np
-import py
 import pytest
-from holofun.tiff_readers import SItiffCore, TiffFileDataReader, SItiffDataReader
+from holofun.si_tiff import SItiffCore, TiffFileDataReader, SItiffDataReader
 
 @pytest.fixture
 def good_file():

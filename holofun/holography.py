@@ -1,6 +1,4 @@
-from dataclasses import dataclass
 import pandas as pd
-import numpy as np
 
 def make_holo_df(hr_targets):
     holos = pd.DataFrame({
@@ -13,16 +11,14 @@ def make_holo_df(hr_targets):
     
     return holos
 
-@dataclass
 class Holo:
-    """A hologram is a set of targets."""
-    targs: np.ndarray
-    ntargeted: int
-    nmatched: int
-    off_target_range: int
-    off_targets: np.ndarray
-    xyz: np.ndarray
-    xyz_matched: np.ndarray
-    
-    def __post_init__(self):
-        pass
+    def __init__(self, targs) -> None:
+        self.targs = targs
+        
+        
+        self.ntargeted = len(targs)
+        self.nmatched = None
+        self.off_target_range = 8 # microns
+        self.off_targets = None
+        self.xyz = None
+        

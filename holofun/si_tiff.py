@@ -169,14 +169,16 @@ def get_tslice(z_idx: int, ch_idx: int, nchannels: int, nplanes: int):
     """
     return slice((z_idx*nchannels)+ch_idx, None, nplanes*nchannels)
 
+READERS = {
+    'scanimage': SItiffDataReader,
+    'tifffile': TiffFileDataReader
+}
+
 class SItiffCore:
-    def __init__(self, path: Path, backend: AbstractReader = None) -> None:
+    def __init__(self, path: Path, backend: str = 'scanimage') -> None:
         self.path = str(path)
         
-        if backend is None:
-            self.backend = SItiffDataReader
-        else:
-            self.backend = backend
+        self.backend = self._get_reader(backend)
         
         try:
             self._reader = self.backend(self.path)
@@ -193,6 +195,12 @@ class SItiffCore:
         self.zs = self._reader.zs
         self.nplanes = self._reader.nplanes
         self.fr = self._reader.fr
+        
+    def _get_reader(self, backend: str) -> AbstractReader:
+        try:
+            return READERS[backend]
+        except KeyError:
+            raise ValueError(f'Could not find backend {backend}. Available options are {list(READERS.keys())}')
         
     def extract(self, z, ch):
         """

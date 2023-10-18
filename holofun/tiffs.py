@@ -161,6 +161,11 @@ class RGBImgViewer:
         ax.imshow(rgb)
         ax.axis('off')
         
+    def zoom(self, x, y, bb=50, ch=None, ax=None):
+        mask = get_crop_mask(x, y, bb)
+        self.img = self.img[mask]
+        self.show(ch, ax)
+        
 def add_scalebar(ax, um_length, fs=18, lw=8, **kwargs):
     px_length = um_length * PX_PER_UM
     fontprops = fm.FontProperties(size=fs)

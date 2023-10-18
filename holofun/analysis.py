@@ -229,4 +229,18 @@ def split_and_corr_cells(df: pd.DataFrame, col: str, frac=0.5, replace=False):
     corr_vals = mrg.groupby(['cell'])[['df','df2']].corr().iloc[0::2,-1].values
     return corr_vals
 
-# def measure_stim_distance():
+def single_cell_stim_distance(df: pd.DataFrame, cells: list[int], cols: list[str] = ['x','y'], 
+                              cell_key: str = 'cell', out_str: str = 'dstim') -> pd.DataFrame:
+    """Calculate the distance to a single cell of interest. Adds columns to df as dstim{cell}."""
+    cols_select = [cell_key] + cols
+    stim_d_xy = df.loc[df[cell_key].isin(cells), cols_select].groupby(cell_key).first()
+    for i in cells:
+        df[f'{out_str}{i}'] = np.linalg.norm(df[cols] - stim_d_xy.loc[i], axis=1)
+    return df
+
+def fit_xy_line(x: np.ndarray, y: np.ndarray):
+    """Fit a line to x,y data. Returns general x and y."""
+    m, b = np.polyfit(x, y, 1)
+    xr = np.arange(x.min()*0.9, x.max()*1.1, 0.1)
+    yfit = m*xr + b
+    return xr, yfit

@@ -20,8 +20,8 @@ dependencies:
  - scikit-image
  - imageio
  - imageio-ffmpeg
- - cython
- - cvxpy
+ - cython # for OASIS
+ - cvxpy # for OASIS
  - numba # optional, motion utils
  - mkl_fft # optional, motion utils
  - numexpr # pandas performance
@@ -29,6 +29,7 @@ dependencies:
  - pytables # pandas performance
  - pyarrow # pandas IO
  - zlib # pandas IO
+ - pyyaml
  - pip:
    - pytest
    - scanimage-tiff-reader

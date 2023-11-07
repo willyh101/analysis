@@ -8,15 +8,14 @@ from datetime import datetime
 import yaml
 from suite2p import run_s2p
 
-sys.path.append('/home/will/code/holofun')
+sys.path.append('/home/will/code/analysis')
 
 from holofun.si_tiff import SItiffCore
 import s2p_ops
 
 TIFF_BASE = '/mnt/data2/experiments'
 RESULT_BASE = '/mnt/localdata'
-
-ops_to_use = 'default_ops'
+DEFAULT_OPS = 'default_ops'
 
 ##--- handle args ---##
 parser = argparse.ArgumentParser(description='Run Suite2p!')
@@ -30,6 +29,10 @@ parser.add_argument('--resultbase',
 parser.add_argument('--tiffbase', 
                     help='tiff base folder location',
                     default=TIFF_BASE, dest='tiff_loc')
+parser.add_argument('--ops',
+                    type=str,
+                    help='which ops to use',
+                    default=DEFAULT_OPS, dest='ops_dict')
 
 args = parser.parse_args()
 
@@ -113,8 +116,10 @@ for sv in save_locs:
         yaml.dump(db_out, f, default_flow_style=False)
 
 # load ops
-# TODO: we'll add a commonad line access later
-ops = getattr(s2p_ops, ops_to_use)
+try:
+    ops = getattr(s2p_ops, args.ops_dict)
+except AttributeError:
+    raise AttributeError(f'No ops dict named {args.ops_dict} in s2p_ops.py')
 
 # setup s2p db
 tmp_tiff = SItiffCore(glob(data_path[0]+'/*.tif')[0])

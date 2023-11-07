@@ -2,7 +2,7 @@ default_ops = {
     # general
     'diameter': 10,
     # 'fast_disk': 'k:/tmp/s2p_python',
-    'do_bidiphase': True,
+    'do_bidiphase': False,
     'save_mat': False,
     'save_NWB': False,
     'tau': 1.0,
@@ -38,3 +38,17 @@ default_ops = {
     # custom settings
     'remove_artifacts': (20, 512-20)
 }
+
+ops_8m_mods = {
+    # general
+    'diameter': 10, # shrink the diameter for ST 8m
+    'tau': 0.05, # 8m is quite fast
+    
+    # registration
+    'do_registration': 2, # 2 forces re-registration
+    
+    # cell extraction
+     'threshold_scaling': 0.6,
+}
+
+ops_8m = {**default_ops, **ops_8m_mods}

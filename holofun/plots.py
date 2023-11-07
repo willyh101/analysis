@@ -209,3 +209,11 @@ def histfill(vals, bw=100, ax=None, fill_alpha=0.4, label=None, color=None, **kw
     ax.fill_between(xs[1:], ys, alpha=fill_alpha, color=color, **kwargs)
     ax.plot(xs[1:], ys, label=label, color=color)
     return ax
+
+def jitter_xy(y, cat_idx, jitter=0.1):
+    """Jitter x values by a small amount for plotting categorical data."""
+    rng = np.random.default_rng()
+    y = np.asarray(y)
+    n = len(y)
+    x = cat_idx + rng.normal(size=n) * jitter
+    return x,y

@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
+import pandas as pd
+from matplotlib import axes
 
 from .stats import sem
 
@@ -14,9 +16,9 @@ def scatter2hist(x, y, bins=(10,10), ax=None, do_log=False, **kwargs):
     ax.imshow(np.rot90(h), interpolation='nearest', **kwargs)
     return ax
     
-def plot_mean_dff(trwise_data, cells=None, trials=None, xvals=None, ax=None, falpha=0.5, **kwargs):
+def plot_mean_dff(trwise_data: np.ndarray, cells=None, trials=None, xvals=None, ax=None, falpha=0.5, label=None, **kwargs):
     if ax is None:
-       fig, ax = plt.subplots(1,1, figsize=(4,4), constrained_layout=True)
+       fig, ax = plt.subplots(1,1, figsize=(4,3), constrained_layout=True)
        
     if cells is None:
         cells = np.arange(trwise_data.shape[1])
@@ -33,14 +35,14 @@ def plot_mean_dff(trwise_data, cells=None, trials=None, xvals=None, ax=None, fal
     else:
         x = xvals
     
-    ax.plot(x, mm, **kwargs)
+    ax.plot(x, mm, label=label, **kwargs)
     ax.fill_between(x, mm+err, mm-err, edgecolor=None, alpha=falpha, **kwargs)
     
     return ax
 
 def plot_mean_dff_by_cell(trwise_data, cells=None, trials=None, xvals=None, ax=None, **kwargs):
     if ax is None:
-       fig, ax = plt.subplots(1,1, figsize=(4,4), constrained_layout=True)
+       fig, ax = plt.subplots(1,1, figsize=(3,3), constrained_layout=True)
        
     if cells is None:
         cells = np.arange(trwise_data.shape[1])
@@ -63,9 +65,9 @@ def plot_mean_dff_by_cell(trwise_data, cells=None, trials=None, xvals=None, ax=N
 
     return ax
 
-def plot_mean_dff_of_cell(trwise_data, cell, trials=None, xvals=None, ax=None, **kwargs):
+def plot_mean_dff_of_cell(trwise_data, cell, trials=None, xvals=None, ax=None, label=None, **kwargs):
     if ax is None:
-       fig, ax = plt.subplots(1,1, figsize=(4,4), constrained_layout=True)
+       fig, ax = plt.subplots(1,1, figsize=(3,3), constrained_layout=True)
        
     if trials is None:
         trials = np.arange(trwise_data.shape[0])
@@ -80,12 +82,12 @@ def plot_mean_dff_of_cell(trwise_data, cell, trials=None, xvals=None, ax=None, *
     else:
         x = xvals
     
-    ax.plot(x, mm, label=cell, **kwargs)
+    ax.plot(x, mm, label=label, **kwargs)
     ax.fill_between(x, mm+err, mm-err, alpha=0.5, **kwargs)
 
     return ax
 
-def plot_tc(d, cell, drop_grey_screen=True, ax=None, **kwargs):
+def plot_tc(d: pd.DataFrame, cell: int, drop_grey_screen=True, ax: axes.Axes = None, **kwargs):
     """Give a mean DataFrame and a cell number, plot the tuning curve."""
     if ax is None:
         fig, ax = plt.subplots(1,1, figsize=(3,3), constrained_layout=True)

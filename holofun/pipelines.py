@@ -2,6 +2,7 @@ import pandas as pd
 import scipy.stats as stats
 import numpy as np
 
+from .s2p import Suite2pData
 from .analysis import make_mean_df
 from .traces import (baseline_subtract, cut_psths, make_trialwise,
                      min_subtract, rolling_baseline_dff, unravel, reravel)
@@ -9,7 +10,8 @@ from .vis.generic import find_vis_resp
 from .vis.tuning import osi, pdir, po, dsi, osi_vecsum
 
 
-def process_s2p(s2p, epoch, pre_time, total_time=None, do_zscore=False):
+def process_s2p(s2p: Suite2pData, epoch: int, pre_time: int, total_time=None, do_zscore=False,
+                np_subtract=True):
     """Process a suite2p object for PSTH analysis.
     
     Args:
@@ -24,7 +26,11 @@ def process_s2p(s2p, epoch, pre_time, total_time=None, do_zscore=False):
         trwise (np.array): cell x trial x time array of PSTHs
     """
     # get traces
-    raw_traces = s2p.cut_traces_epoch(epoch)
+    if np_subtract:
+        raw_traces = s2p.cut_traces_epoch(epoch)
+    else:
+        raw_traces = s2p.cut_traces_epoch(epoch, src='F_raw')
+        
     traces = min_subtract(raw_traces)
     
     # calculate rolling baseline
@@ -35,7 +41,7 @@ def process_s2p(s2p, epoch, pre_time, total_time=None, do_zscore=False):
         traces = stats.zscore(traces, axis=1)
 
     # make trialwise
-    lengths = s2p.get_epoch_trial_lengths(epoch)
+    lengths = s2p.get_epoch_trial_lengths(epoch)#[:-1]
     trwise = make_trialwise(traces, lengths)
     trwise = baseline_subtract(trwise, pre_time)
     
@@ -44,7 +50,7 @@ def process_s2p(s2p, epoch, pre_time, total_time=None, do_zscore=False):
         
     return traces, trwise
 
-def process_oasis(s2p, epoch, pre_time, penalty=0, optimize_g=True, as_trialwise=True):
+def process_oasis(s2p: Suite2pData, epoch: int, pre_time: int, penalty=0, optimize_g=True, as_trialwise=True):
     """Run the standard suite2p pipeline and then process with oasis."""
     from .deconvolution import run_oasis
     

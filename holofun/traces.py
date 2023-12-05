@@ -2,10 +2,10 @@ import pandas as pd
 import numpy as np
 import xarray as xr
 
-def min_subtract(traces):
+def min_subtract(traces: np.ndarray) -> np.ndarray:
     return traces - traces.min(axis=1).reshape(-1,1)
 
-def baseline_subtract(cut_traces, baseline_length):
+def baseline_subtract(cut_traces: np.ndarray, baseline_length: int) -> np.ndarray:
     baseline = cut_traces[:,:,:baseline_length].mean(axis=2)
     psths_baselined = cut_traces - baseline.reshape(*cut_traces.shape[:2], 1)
     return psths_baselined
@@ -15,13 +15,13 @@ def percentile_dff(traces, q=10):
     traces = (traces-f0s)/f0s
     return traces
 
-def rolling_baseline_dff(traces, q=10, window=300):
+def rolling_baseline_dff(traces: np.ndarray, q=10, window=300) -> np.ndarray:
     f0s = pd.DataFrame(traces.T).rolling(window, min_periods=1, center=True).quantile(q/100)
     f0s = f0s.values.T
     traces = (traces-f0s)/f0s
     return traces
 
-def make_trialwise(traces, trial_lengths):
+def make_trialwise(traces: np.ndarray, trial_lengths: list[int]) -> np.ndarray:
     traces = np.split(traces, np.cumsum(trial_lengths[:-1]), axis=1)
     shortest = min(map(lambda x: x.shape[1], traces))
     traces = np.array([a[:, :shortest] for a in traces])

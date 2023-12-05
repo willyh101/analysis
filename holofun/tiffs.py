@@ -72,6 +72,16 @@ class SItiff(SItiffCore):
             
         return rgb_im
     
+    def show_merge(self, z_idx, gscale=None, rscale=None, green_as_cyan=False, ax=None):
+        if ax is None:
+            ax = plt.gca()
+
+        merge_img = self.merge_mean(z_idx, gscale, rscale, green_as_cyan)
+        ax.imshow(merge_img)
+        ax.axis('off')
+
+        return ax
+    
     def show(self, z_idx, ch_idx, scaling=None, as_rgb=False, rgb_ch=None, ax=None, 
              ch_label_txt=None, ch_label_color='white', **kwargs):
         
@@ -166,8 +176,8 @@ class RGBImgViewer:
         self.img = self.img[mask]
         self.show(ch, ax)
         
-def add_scalebar(ax, um_length, fs=18, lw=8, **kwargs):
-    px_length = um_length * PX_PER_UM
+def add_scalebar(ax, um_length, zoom=1, fs=18, lw=8, **kwargs):
+    px_length = um_length * PX_PER_UM * zoom
     fontprops = fm.FontProperties(size=fs)
     scalebar = AnchoredSizeBar(ax.transData, 
                             px_length,

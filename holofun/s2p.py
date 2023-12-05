@@ -62,8 +62,8 @@ class Suite2pData:
         
         self.F = neuropil_subtract(self.F_raw, self.Neu, self.neucoeff)
         
-    def get_motion(self):
-        return eucl_motion(self.ops[0]['xoff'], self.ops[0]['yoff'])
+    def get_motion(self, z=0):
+        return eucl_motion(self.ops[z]['xoff'], self.ops[z]['yoff'])
         
     def get_stat_iscell(self):
         stat_combined = np.concatenate(self.stats)
@@ -135,7 +135,7 @@ class Suite2pData:
         # update meds
         self.meds = self.get_iscell_meds()
     
-    def cut_traces_epoch(self, epoch, src='F'):
+    def cut_traces_epoch(self, epoch: int, src='F') -> np.ndarray:
         """Get s2p traces for a specific epoch."""
         traces = getattr(self, src)
         traces_cut = np.split(traces, np.cumsum(self.ops[0]['frames_per_folder']), axis=1)

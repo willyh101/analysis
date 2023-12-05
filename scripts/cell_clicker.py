@@ -18,7 +18,7 @@ def search_for_file_path():
     root.withdraw()
     # base_dir = 'd:/frankenrig/experiments'
     # base_dir = 'f:/experiments'
-    base_dir = '/mnt/data2/experiments'
+    base_dir = '/mnt/hdd/data2/experiments'
     file_name = filedialog.askopenfilename(parent=root, initialdir=base_dir, 
                                            title='Select Image')
     return file_name

@@ -146,10 +146,10 @@ def flatten(t):
     return [item for sublist in t for item in sublist]
 
 def make_paths(mouse, date, result_base='suite2p_outputs', tiff_base='/mnt/hdd/data2/experiments', 
-               must_exist=True, keys=('srv', 'ssd', 'tiffs')):
+               result_path='/mnt/nvme/data', must_exist=True, keys=('srv', 'ssd', 'tiffs')):
     
     franken = Path('/mnt/servers/frankenshare')
-    edrive = Path('/mnt/nvme/data', result_base, mouse, date)
+    edrive = Path(result_path, result_base, mouse, date)
     tiff_path = Path(tiff_base, mouse, date)
     
     drives = (franken, edrive, tiff_path)

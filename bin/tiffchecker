@@ -4,12 +4,10 @@ CLI-based checker for junk tiffs that ScanImage occasionally creates.
 """
 from pathlib import Path
 import argparse
-import platform
 from tqdm import tqdm
 
 SZ_THRESHOLD_MB = 10
-BASE_PATH_WIN = 'f:/experiments'
-BASE_PATH_WSL = '/mnt/data2/experiments'
+BASE_PATH = '/mnt/hdd/data2/experiments'
 
 def check_tiffs(search_path: Path, sz_threshold_mb):
     sz_threshold = sz_threshold_mb * 1024 * 1024
@@ -51,10 +49,6 @@ def make_verify_path(root, mouse, date):
         raise FileNotFoundError(f"Can't fine the path specified: {search_path}")
     
 def main():
-    if platform.system() == 'Linux':
-        base_path = BASE_PATH_WSL
-    else:
-        base_path = BASE_PATH_WIN
         
     parser = argparse.ArgumentParser(description='Scan tiffs for junk files. Searches by file size.')
 
@@ -71,7 +65,7 @@ def main():
 
     parser.add_argument('--root',
                         help='root directory to use',
-                        default=base_path)
+                        default=BASE_PATH)
 
     parser.add_argument('--size',
                         help='threshold file size in MB',

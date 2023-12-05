@@ -145,23 +145,12 @@ def nbsetup(despine=True, constrained=True, font=None):
 def flatten(t):
     return [item for sublist in t for item in sublist]
 
-def make_paths(mouse, date, result_base, tiff_base='f:/experiments', 
-               franken_drive='x', must_exist=True, keys=('srv', 'e', 'tiffs')):
+def make_paths(mouse, date, result_base='suite2p_outputs', tiff_base='/mnt/hdd/data2/experiments', 
+               must_exist=True, keys=('srv', 'ssd', 'tiffs')):
     
-    tiff_base = tiff_base.replace(':','').split('/')
-    
-    if platform.system() == 'Linux':
-        # franken = Path('/mnt/franken')
-        # edrive = Path('/mnt/e/', result_base, mouse, date)
-        # tiff_path = Path('/mnt', *tiff_base, mouse, date)
-        franken = Path('/mnt/frankenshare')
-        edrive = Path('/mnt/localdata/', result_base, mouse, date)
-        tiff_path = Path('/mnt', 'data2/experiments', mouse, date)
-        
-    else:
-        franken = Path(franken_drive + ':/')
-        edrive = Path('e:/', result_base, mouse, date)
-        tiff_path = Path(tiff_base[0]+':/',tiff_base[1], mouse, date)
+    franken = Path('/mnt/servers/frankenshare')
+    edrive = Path('/mnt/nvme/data', result_base, mouse, date)
+    tiff_path = Path(tiff_base, mouse, date)
     
     drives = (franken, edrive, tiff_path)
     

@@ -5,18 +5,12 @@ CLI-based version of my automated data mover.
 
 import argparse
 from pathlib import Path
-import platform
 from tqdm import tqdm
 import shutil
 import time
 
-
-remote_root_win = 'x:/'
-remote_root_wsl = '/mnt/frankenshare/'
-if platform.system() == 'Linux':
-    rt = remote_root_wsl
-else:
-    rt = remote_root_win
+rt = '/mnt/servers/frankenshare/'
+destination = '/mnt/hdd/data2/experiments'
 
 # remote server location
 remote = rt+'will/scanimage data'
@@ -29,12 +23,6 @@ vis_loc = rt+'stimdata'
 
 # new vis stim data loc
 vis_loc_new = rt+'will/pt data'
-
-# local destination
-if platform.system() == 'Linux':
-    destination = '/mnt/data2/experiments'
-else:
-    destination = 'f:/experiments'
 
 
 ##--- handle args ---##

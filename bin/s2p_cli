@@ -13,16 +13,18 @@ sys.path.append('/home/will/code/analysis')
 from holofun.si_tiff import SItiffCore
 import s2p_ops
 
-TIFF_BASE = '/mnt/data2/experiments'
-RESULT_BASE = '/mnt/localdata'
+TIFF_BASE = '/mnt/hdd/data2/experiments'
+RESULT_BASE = '/mnt/nvme/data'
 DEFAULT_OPS = 'default_ops'
+DEFAULT_DEST_FOLDER = 'suite2p_outputs'
 
 ##--- handle args ---##
 parser = argparse.ArgumentParser(description='Run Suite2p!')
 parser.add_argument('mouse', type=str)
 parser.add_argument('date', type=str)
-parser.add_argument('dest', type=str,
-                    help="name of folder to save into. will be create if it doesn't exist")
+parser.add_argument('--dest', type=str,
+                    help="name of folder to save into. will be create if it doesn't exist",
+                    default=DEFAULT_DEST_FOLDER, dest='dest')
 parser.add_argument('--resultbase', 
                     help='result base folder location',
                     default=RESULT_BASE, dest='result_path')
@@ -108,7 +110,7 @@ dt = datetime.now().strftime("%Y%m%d_%H%M%S")
 db_save_path = '__'.join([date, mouse, 'suite2p', dt])+'.yml'
 
 save_locs = [
-    Path('/mnt/localdata/db', db_save_path),
+    Path('/mnt/nvme/data/suite2p_outputs/db', db_save_path),
     # Path('/mnt/synapse/db/suite2p')
 ]
 for sv in save_locs:

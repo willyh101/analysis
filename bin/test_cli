@@ -1,0 +1,18 @@
+#!/usr/bin/env zsh
+
+NEWLINE=$'\n'
+
+eval "$(conda shell.zsh hook)"
+
+echo "Testing analysis environment..."
+conda activate analysis
+conda info
+which python
+test_py_cli
+echo "${NEWLINE}------------${NEWLINE}"
+conda deactivate
+echo "Testing suite2p environment..."
+conda activate suite2p
+conda info
+which python
+test_py_cli

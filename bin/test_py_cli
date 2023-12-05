@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+pypath = os.getenv('PYTHONPATH','').split(os.pathsep)
+print('PYTHONPATH is...', pypath)
+
+print('sys.path is...', sys.path)
+print('sys.executable is...', sys.executable)

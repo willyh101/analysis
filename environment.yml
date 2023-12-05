@@ -35,6 +35,6 @@ dependencies:
    - scanimage-tiff-reader
    - tqdm
    - tifffile
-   - pyqt5
+#   - pyqt5
    - jax[cpu]
    - git+https://github.com/j-friedrich/OASIS

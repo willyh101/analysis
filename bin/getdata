@@ -1,19 +1,20 @@
-#!/usr/bin/env bash
-DEST='figure ground'
+#!/usr/bin/env zsh
 
-eval "$(conda shell.bash hook)"
+DEST='aryanna'
+RMT='/mnt/servers/frankenshare/Aryanna'
+
+eval "$(conda shell.zsh hook)"
 
 conda activate analysis
 echo "First, moving files..."
-#python ~/holofun/scripts/datamover_cli.py $1 $2
-movedata $1 $2
+movedata $1 $2 --remote $RMT
 
 echo "Second, checking tiffs..."
-# python ~/holofun/scripts/tiffchecker.py $1 $2
-tiffchecker $1 $2
+tiffchecker $1 $2 --verbose
 
 conda deactivate
 echo "All done, now to suite2p..."
 
-conda activate suite2p
-python ~/code/holofun/bin/s2p_cli $1 $2 DEST
+conda activate suite2p-stable
+
+s2p_cli $1 $2 --ops ops_8m

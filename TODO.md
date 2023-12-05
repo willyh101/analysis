@@ -10,3 +10,11 @@
 
 ### Tests:
 - [ ] make tests for main code
+
+
+### Other
+- [x] fix setup.py scrips, maybe add bin to path?
+    - I have currently removed scripts from setup.py because they cache into miniforge instead of being added to the path, so this makes them not editable
+    - [x] add bin to path programmatically
+
+- [ ] fix PyQT GUI interfaces

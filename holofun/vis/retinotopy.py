@@ -1,6 +1,7 @@
 import inspect
-import time
 import logging
+import time
+
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize as sop
@@ -21,7 +22,14 @@ def get_ret_data(data: np.ndarray, win:tuple, locs:np.ndarray):
     Returns:
         np.ndarray: cell x Y x X
     """
-    data_ = data[:,:,win[0]:win[1]]
+    if len(win) == 2:
+        # assumes win represents response window in frames
+        data_ = data[:,:,win[0]:win[1]]
+    elif len(win) == 4:
+        # assunes win has baseline and response window in frames
+        data_ = data[:,:,win[2]:win[3]] - data[:,:,win[0]:win[1]].mean(2, keepdims=True)
+    else:
+        raise ValueError('win must be a tuple of length 2 or 4')
     Ny = locs[:,0].max()
     Nx = locs[:,1].max()
     ret = np.zeros((data_.shape[1], Ny, Nx))
@@ -159,12 +167,18 @@ class Retinotopy:
             """
         return inspect.cleandoc(txt)
     
-def fit_all_ret(data, base_win, response_win, locinds, gridsize, **kwargs):
+def fit_all_ret(data: np.ndarray, base_win: tuple[int,int], response_win: tuple[int,int], 
+                locinds: np.ndarray, gridsize: int, baseline_resp = False, **kwargs) -> dict:
     
     Ny = locinds[:,0].max()
     Nx = locinds[:,1].max()
 
-    ret = get_ret_data(data, response_win, locinds)
+    if baseline_resp:
+        win = (*base_win, *response_win)
+    else:
+        win = response_win
+
+    ret = get_ret_data(data, win, locinds)
     
     ncells = ret.shape[0]
     ctr = np.full((ncells, 2), np.nan)

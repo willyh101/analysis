@@ -10,7 +10,7 @@ def baseline_subtract(cut_traces: np.ndarray, baseline_length: int) -> np.ndarra
     psths_baselined = cut_traces - baseline.reshape(*cut_traces.shape[:2], 1)
     return psths_baselined
 
-def percentile_dff(traces, q=10):
+def percentile_dff(traces: np.ndarray, q=10) -> np.ndarray:
     f0s = np.percentile(traces, q, axis=1, keepdims=True)
     traces = (traces-f0s)/f0s
     return traces
@@ -69,7 +69,7 @@ def stim_align_cellwise(trialwise_traces, times_cell, new_start):
 
     return psth
 
-def cut_psths(stim_aligned, length=25):
+def cut_psths(stim_aligned: np.ndarray, length=25) -> np.ndarray:
     cut_psths = stim_aligned[:,:,:length]
     return cut_psths
 

@@ -1,6 +1,6 @@
 import numpy as np
-from sklearn.metrics import mean_squared_error, r2_score
 from scipy import stats
+from sklearn.metrics import mean_squared_error, r2_score
 
 RNG = np.random.default_rng()
 

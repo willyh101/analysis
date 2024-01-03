@@ -1,14 +1,16 @@
 import inspect
+import time
 import warnings
-import pandas as pd
+
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.stats as stats
+import pandas as pd
 import scipy.optimize as sop
+import scipy.stats as stats
 from tqdm import tqdm
-import time
 
-from ..stats import gauss2d, rsquared, sumsquares, mse, von_mises, von_mises_sym
+from ..stats import (gauss2d, mse, rsquared, sumsquares, von_mises,
+                     von_mises_sym)
 from ..utils import replace_tup_ix
 
 

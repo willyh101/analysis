@@ -1,13 +1,13 @@
+import numpy as np
 import pandas as pd
 import scipy.stats as stats
-import numpy as np
 
-from .s2p import Suite2pData
 from .analysis import make_mean_df
+from .s2p import Suite2pData
 from .traces import (baseline_subtract, cut_psths, make_trialwise,
-                     min_subtract, rolling_baseline_dff, unravel, reravel)
+                     min_subtract, reravel, rolling_baseline_dff, unravel)
 from .vis.generic import find_vis_resp
-from .vis.tuning import osi, pdir, po, dsi, osi_vecsum
+from .vis.tuning import dsi, osi, osi_vecsum, pdir, po
 
 
 def process_s2p(s2p: Suite2pData, epoch: int, pre_time: int, total_time=None, do_zscore=False,

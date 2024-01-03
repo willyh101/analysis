@@ -1,5 +1,4 @@
 from pathlib import Path
-import platform
 import time
 import functools
 import os
@@ -102,6 +101,7 @@ def nbsetup(despine=True, constrained=True, font=None):
             get_ipython().magic('autoreload 3')
             get_ipython().magic('matplotlib inline')
             get_ipython().magic("config InlineBackend.figure_format = 'retina'")
+            # get_ipython().magic("config InlineBackend.figure_format = 'svg'")
     except NameError:
         pass
     

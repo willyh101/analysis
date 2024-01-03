@@ -1,7 +1,9 @@
-import numpy as np
 import h5py
+import numpy as np
 import scipy.io as sio
+
 from .utils import failsgraceful
+
 
 @failsgraceful
 def load_fg_result(path):

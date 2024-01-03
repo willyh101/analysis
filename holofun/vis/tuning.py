@@ -7,6 +7,7 @@ import scipy.optimize as sop
 
 from ..stats import rsquared, sumsquares, von_mises_dir
 
+
 def mean_responses_to_mdf(mresp: np.ndarray):
     pass
 

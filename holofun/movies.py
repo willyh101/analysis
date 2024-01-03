@@ -1,9 +1,10 @@
-from ScanImageTiffReader import ScanImageTiffReader
-from .tiffs import SItiff, get_tslice
-import numpy as np
-from tqdm import tqdm
-from matplotlib import animation
 import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import animation
+from ScanImageTiffReader import ScanImageTiffReader
+from tqdm import tqdm
+
+from .tiffs import SItiff, get_tslice
 
 
 def make_mov_array(tiff_list, zplane, ch=0, x_cut=slice(None), y_cut=slice(None)):

@@ -1,11 +1,12 @@
 import numpy as np
-import scipy.stats as stats
 import pandas as pd
-from sklearn.neighbors import KDTree
 import scipy.optimize as sop
+import scipy.stats as stats
+from sklearn.neighbors import KDTree
 
 from holofun.constants import PX_PER_UM, UM_PER_PIX
 from holofun.traces import df_add_cellwise
+
 
 def make_mean_df(df, win, col):
     """

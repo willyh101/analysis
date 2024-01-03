@@ -6,13 +6,10 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 from skimage import exposure
 
 from .constants import PX_PER_UM
-from .si_tiff import (SItiffCore, 
-                      get_tslice, 
-                      slice_movie, 
-                      count_tiff_lengths, 
-                      get_crop_mask, 
-                      tiffs2array)
+from .si_tiff import (SItiffCore, count_tiff_lengths, get_crop_mask,
+                      get_tslice, slice_movie, tiffs2array)
 from .simple_guis import openfilegui
+
 
 class SItiff(SItiffCore):
         

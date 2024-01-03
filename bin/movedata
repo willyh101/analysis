@@ -18,6 +18,9 @@ remote = rt+'will/scanimage data'
 # daq file loc
 daq_loc = rt+'setupdaq'
 
+# etc daq files
+daq_etc_loc = rt+'will/etc_daq_files'
+
 # vis stim data loc
 vis_loc = rt+'stimdata'
 
@@ -49,6 +52,7 @@ if not src.exists():
 ###---- begin moving files ----###
 dst = Path(destination, mouse, date)
 daq_loc = Path(daq_loc)
+daq_etc_loc = Path(daq_etc_loc)
 vis_loc = Path(vis_loc, date[2:], mouse)
 vis_loc_new = Path(vis_loc_new)
 
@@ -99,7 +103,20 @@ else:
     else:
         print('Downloading DAQ file.')
     for df in daq_file:
-        shutil.copy(df, dst)    
+        shutil.copy(df, dst)   
+
+# download etc daq files from other daqs, etc
+# expected to have today's date and mouse in the filename
+print('Searching for other DAQ files...')
+all_daq_files = list(daq_etc_loc.glob('*.mat'))
+# find the daq files that have both the date and mouse in the filename
+other_daq_files = [f for f in all_daq_files if date in f.stem and mouse in f.stem]
+if len(other_daq_files) == 0:
+    print('No other DAQ files found, skipping.')
+else:
+    print(f'Found {len(other_daq_files)} other DAQ files. Downloading...')
+    for df in other_daq_files:
+        shutil.copy(df, dst)
 
 # search for PT files and download
 if vis_loc.exists():

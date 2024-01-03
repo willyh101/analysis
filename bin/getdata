@@ -1,13 +1,10 @@
 #!/usr/bin/env zsh
 
-DEST='aryanna'
-RMT='/mnt/servers/frankenshare/Aryanna'
-
 eval "$(conda shell.zsh hook)"
 
 conda activate analysis
 echo "First, moving files..."
-movedata $1 $2 --remote $RMT
+movedata $1 $2
 
 echo "Second, checking tiffs..."
 tiffchecker $1 $2 --verbose
@@ -15,6 +12,7 @@ tiffchecker $1 $2 --verbose
 conda deactivate
 echo "All done, now to suite2p..."
 
-conda activate suite2p-stable
+conda activate suite2p
 
-s2p_cli $1 $2 --ops ops_8m
+# s2p_cli $1 $2 --ops ops_8m
+s2p_cli $1 $2

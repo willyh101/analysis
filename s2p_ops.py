@@ -36,13 +36,13 @@ default_ops = {
     'neucoeff': 0.7,  # neuropil coefficient
     
     # custom settings
-    'remove_artifacts': (20, 512-20)
+    'remove_artifacts': (80, 512-80)
 }
 
-ops_8m_mods = {
+_ops_8m_mods = {
     # general
     # 'diameter': 8, # shrink the diameter for ST 8m
-    'diameter': 12, # for zoom 2
+    'diameter': 8, # for zoom 2
     'tau': 0.1, # 8m is quite fast
     
     # registration
@@ -56,4 +56,4 @@ ops_8m_mods = {
      'remove_artifacts': (80, 512-80)
 }
 
-ops_8m = {**default_ops, **ops_8m_mods}
+ops_8m = {**default_ops, **_ops_8m_mods}

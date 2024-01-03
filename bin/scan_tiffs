@@ -13,7 +13,7 @@ logging.basicConfig(format=logformat, style='{')
 
 # mouse = 'w59_1'
 # date = '20230425'
-tiff_root = '/mnt/data2/experiments'
+tiff_root = '/mnt/hdd/data2/experiments'
 
 parser = argparse.ArgumentParser(description='Scan for corrupted tiffs in directories.')
 parser.add_argument('mouse', type=str)

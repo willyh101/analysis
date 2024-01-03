@@ -5,11 +5,27 @@ CLI-based checker for junk tiffs that ScanImage occasionally creates.
 from pathlib import Path
 import argparse
 from tqdm import tqdm
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 SZ_THRESHOLD_MB = 10
-BASE_PATH = '/mnt/hdd/data2/experiments'
+# BASE_PATH = '/mnt/hdd/data2/experiments'
+BASE_PATH = Path(os.getenv('TIFF_BASE'))
 
-def check_tiffs(search_path: Path, sz_threshold_mb):
+def check_tiffs(search_path: Path, sz_threshold_mb: int) -> list[Path]:
+    """
+    Check the tiff files in the given search path and return a list of tiff files
+    that are smaller than the specified size threshold.
+
+    Args:
+        search_path (Path): The path to search for tiff files.
+        sz_threshold_mb (int): The size threshold in megabytes.
+
+    Returns:
+        List[Path]: A list of tiff files that are smaller than the size threshold.
+    """
     sz_threshold = sz_threshold_mb * 1024 * 1024
     fs = sorted(search_path.rglob('*.tif*'))
     silence = not VERBOSE
@@ -26,6 +42,13 @@ def check_tiffs(search_path: Path, sz_threshold_mb):
     return junk
 
 def del_tiffs(tiff_list: list[Path], dry_run=True):
+    """
+    Delete the specified TIFF files.
+
+    Args:
+        tiff_list (list[Path]): A list of Path objects representing the TIFF files to be deleted.
+        dry_run (bool, optional): If True, perform a dry run without actually deleting the files. Defaults to True.
+    """
     if VERBOSE and dry_run:
         print('----DRY RUN----')
     if len(tiff_list) == 0:

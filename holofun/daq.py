@@ -1,7 +1,9 @@
-from .simple_guis import openfilegui
-import numpy as np
-import h5py
 import logging
+
+import h5py
+import numpy as np
+
+from .simple_guis import openfilegui
 
 # going to start by writing functions but eventially this
 # should be folded into a DaqFile class
@@ -130,17 +132,8 @@ class SetupDaqFile:
         with h5py.File(self.path, 'r') as f:
             trial_run_speed = []
             for s in self.sweeps:
-                # get rotor ticks
                 rotary_sweep = f[f['ExpStruct/digitalSweeps'][s][0]][self.run_ch,:]
-                run_ticks = np.append(np.diff(rotary_sweep>0), 0)
-                
-                # calculate the number of daq pts per frame
-                binwidth = 1 / self.fr  # width in time
-                binpts = round(self.rate * binwidth) # width in pts
-                
-                # get the number of rotor ticks per bin and calc speed
-                run_frame_bins = np.add.reduceat(run_ticks, np.arange(0,len(run_ticks), binpts))
-                trial_speed = run_frame_bins / 360 * self.wheel_circum / binwidth
+                trial_speed = calculate_trial_run_speed(rotary_sweep, self.fr, self.rate, self.wheel_circum)
                 trial_run_speed.append(trial_speed)   
         return np.array(trial_run_speed)
     
@@ -341,3 +334,28 @@ def decode(daq_path, dataset):
             # this is a special case, but shouldn't hurt
             strs = [i.replace('\x00\x00',' ') for i in strs]
             return strs
+        
+def calculate_trial_run_speed(rotary_sweep: np.ndarray, fr: float, 
+                              daq_rate=20000, wheel_circum=47.75) -> np.ndarray:
+    """
+    Calculate the trial run speed based on the rotary sweep data.
+
+    Parameters:
+        rotary_sweep (np.ndarray): Array containing the rotary sweep data.
+        fr (float): Imaging frame rate of the data.
+        daq_rate (int, optional): Sampling rate of the DAQ. Default is 20000.
+        wheel_circum (float, optional): Circumference of the wheel. Default is 47.75.
+
+    Returns:
+        np.ndarray: Array containing the calculated trial run speed.
+    """
+    # calculate the number of daq pts per frame
+    binwidth = 1 / fr  # width in time
+    binpts = round(daq_rate * binwidth) # width in pts
+    
+    # get the number of rotor ticks per bin and calc speed
+    run_ticks = np.append(np.diff(rotary_sweep>0), 0)
+    run_frame_bins = np.add.reduceat(run_ticks, np.arange(0,len(run_ticks), binpts))
+    trial_speed = run_frame_bins / 360 * wheel_circum / binwidth
+
+    return trial_speed

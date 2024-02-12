@@ -6,8 +6,8 @@ from .analysis import make_mean_df
 from .s2p import Suite2pData
 from .traces import (baseline_subtract, cut_psths, make_trialwise,
                      min_subtract, reravel, rolling_baseline_dff, unravel)
-from .vis.generic import find_vis_resp
-from .vis.tuning import dsi, osi, osi_vecsum, pdir, po
+from .vis.generic import find_vis_resp, find_vis_resp_pre_post
+from .vis.tuning import dsi, get_pref_size, get_ssi, osi, osi_vecsum, pdir, po
 
 
 def process_s2p(s2p: Suite2pData, epoch: int, pre_time: int, total_time=None, do_zscore=False,
@@ -67,7 +67,8 @@ def process_oasis(s2p: Suite2pData, epoch: int, pre_time: int, penalty=0, optimi
     return c,s,p
 
 def ori_vis_pipeline(df: pd.DataFrame, 
-                     analysis_window: tuple | np.ndarray) -> tuple[pd.DataFrame, pd.DataFrame]:
+                     analysis_window: tuple | np.ndarray,
+                     use_pre_post=False, **kwargs) -> tuple[pd.DataFrame]:
     """
     Runs the visual analysis pipeline on a DataFrame. Creates and returns
     the mean DataFrame, finds visually responsive cells, finds preferred and
@@ -77,7 +78,7 @@ def ori_vis_pipeline(df: pd.DataFrame,
     Args:
         df (pd.DataFrame): the input DataFrame
         analysis_window (tuple): start and stop time of window to get mean response from
-        col_name (str): Name of column to calculate mean from.
+        use_pre_post (bool, optional): whether to use pre/post window for vis resp. Defaults to False.
 
     Returns:
         2 dataframes, mean and original with values appended.
@@ -85,7 +86,11 @@ def ori_vis_pipeline(df: pd.DataFrame,
     
     mdf = make_mean_df(df, analysis_window, 'ori')
 
-    cells, pvals = find_vis_resp(mdf)
+    if use_pre_post:
+        cells, pvals = find_vis_resp_pre_post(df, win=analysis_window, **kwargs)
+    else:
+        cells, pvals = find_vis_resp(mdf)
+
     prefs, orthos = po(mdf)
     pdirs = pdir(mdf)
     # odirs = odir(mdf)
@@ -121,4 +126,26 @@ def ori_vis_pipeline(df: pd.DataFrame,
     df.loc[df.cell.isin(cells), 'vis_resp'] = True
     df = df.join(pd.Series(pvals, name='pval'), on='cell')
     
+    return df, mdf
+
+def size_tuning_pipeline(df: pd.DataFrame, mdf: pd.DataFrame, lim: int = None):
+    """
+    Run size tuning pipeline on mean dataframe that has size info.
+
+    Args:
+        df (pd.DataFrame): dataframe of visual responses
+        mdf (pd.DataFrame): mean response dataframe
+        lim (int, optional): thresholding limit for SSI calculation. Defaults to None.
+    """
+    pref_size = get_pref_size(mdf)
+    ssi = get_ssi(mdf)
+
+    if lim is not None:
+        ssi[ssi < -lim] = lim
+        ssi[ssi > lim] = lim
+
+    for series in list(pref_size, ssi):
+        df.join(series, on='cell')
+        mdf.join(series, on='cell')
+
     return df, mdf

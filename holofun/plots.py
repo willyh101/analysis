@@ -17,7 +17,7 @@ def scatter2hist(x, y, bins=(10,10), ax=None, do_log=False, **kwargs):
     ax.imshow(np.rot90(h), interpolation='nearest', **kwargs)
     return ax
     
-def plot_mean_dff(trwise_data: np.ndarray, cells=None, trials=None, xvals=None, ax=None, 
+def plot_mean_dff(trwise_data: np.ndarray, cells=None, trials=None, xvals=None, fr=None, ax=None, 
                   falpha=0.5, label=None, **kwargs):
     if ax is None:
        fig, ax = plt.subplots(1,1, figsize=(4,3), constrained_layout=True)
@@ -32,8 +32,10 @@ def plot_mean_dff(trwise_data: np.ndarray, cells=None, trials=None, xvals=None, 
     mm = trwise_data[mask].mean(0).mean(0)
     err = sem(trwise_data[mask].mean(0), 0)
     
-    if xvals is None:
+    if xvals is None and fr is None:
         x = np.arange(mm.size)
+    elif xvals is None and fr is not None:
+        x = np.arange(mm.size) / fr
     else:
         x = xvals
     
@@ -42,7 +44,7 @@ def plot_mean_dff(trwise_data: np.ndarray, cells=None, trials=None, xvals=None, 
     
     return ax
 
-def plot_mean_dff_by_cell(trwise_data: np.ndarray, cells=None, trials=None, xvals=None, ax=None, **kwargs):
+def plot_mean_dff_by_cell(trwise_data: np.ndarray, cells=None, trials=None, xvals=None, fr=None, ax=None, **kwargs):
     if ax is None:
        fig, ax = plt.subplots(1,1, figsize=(3,3), constrained_layout=True)
        
@@ -56,8 +58,10 @@ def plot_mean_dff_by_cell(trwise_data: np.ndarray, cells=None, trials=None, xval
     mm = trwise_data[mask].mean(0)
     err = sem(trwise_data[mask], 0)
     
-    if xvals is None:
+    if xvals is None and fr is None:
         x = np.arange(mm.shape[-1])
+    elif xvals is None and fr is not None:
+        x = np.arange(mm.shape[-1]) / fr
     else:
         x = xvals
     
@@ -68,7 +72,7 @@ def plot_mean_dff_by_cell(trwise_data: np.ndarray, cells=None, trials=None, xval
     return ax
 
 def plot_mean_dff_of_cell(trwise_data: np.ndarray, cell: int, trials=None, 
-                          xvals=None, ax=None, label=None, **kwargs):
+                          xvals=None, fr=None, ax=None, label=None, **kwargs):
     if ax is None:
        fig, ax = plt.subplots(1,1, figsize=(3,3), constrained_layout=True)
        
@@ -80,8 +84,10 @@ def plot_mean_dff_of_cell(trwise_data: np.ndarray, cell: int, trials=None,
     mm = trwise_data[mask].mean(0).squeeze()
     err = sem(trwise_data[mask], 0).squeeze()
     
-    if xvals is None:
+    if xvals is None and fr is None:
         x = np.arange(mm.size)
+    elif xvals is None and fr is not None:
+        x = np.arange(mm.size) / fr
     else:
         x = xvals
     

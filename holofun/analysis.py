@@ -137,7 +137,7 @@ def find_responsive_cells(df, col, cond, win, one_way=False, test_fxn='ttest', a
     
     return ps, cells
 
-def id_cells_in_df(df, cells, new_col_name):
+def id_cells_in_df(df: pd.DataFrame, cells: np.ndarray, new_col_name: str):
     """given a list of cells, assign them as 'True' in a new column on a df"""
     if new_col_name in df:
         df = df.drop([new_col_name], axis=1)

@@ -12,7 +12,8 @@ do_rgb = False
 cmap = 'cividis'
 
 # ROOT_DIR = '/mnt/data2/experiments/w68_1/20231108'
-ROOT_DIR = '/media/will/DATA 2/experiments/w68_1/20231108'
+# ROOT_DIR = '/media/will/DATA 2/experiments/w68_1/20231108'
+ROOT_DIR = '/mnt/hdd/data2/experiments'
 Z_PLANE = 1
 CH = 1 # 0 for green, 1 for red
 

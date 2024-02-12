@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import numpy as np
 
-MINMAX = (0,100)
+MINMAX = (0,150)
 CHANNEL = 'r'
 # don't use these options it will fuck up your coordinates!!
 XSLICE = slice(0,512)

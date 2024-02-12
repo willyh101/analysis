@@ -38,3 +38,4 @@ dependencies:
 #   - pyqt5
    - jax[cpu]
    - git+https://github.com/j-friedrich/OASIS
+   - python-dotenv

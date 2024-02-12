@@ -73,9 +73,10 @@ def cut_psths(stim_aligned: np.ndarray, length=25) -> np.ndarray:
     cut_psths = stim_aligned[:,:,:length]
     return cut_psths
 
-def make_dataframe(traces, fr, stim_id, stim_name='trial_id'):
+def make_dataframe(traces: np.ndarray, fr: float, stim_id: np.ndarray, stim_name='trial_id'):
     # make the dataframe
-    df = xr.DataArray(traces.T).to_dataset(dim='dim_0').to_dataframe()
+    _traces = traces.copy()
+    df = xr.DataArray(_traces.T).to_dataset(dim='dim_0').to_dataframe()
     df = df.reset_index(level=['dim_1', 'dim_2'])
     df = pd.melt(df, ('dim_1', 'dim_2'))
     df = df.rename(columns = {'dim_1':'cell', 'dim_2':'trial', 'variable':'frame', 'value':'df'})
@@ -96,10 +97,12 @@ def df_add_cellwise(df, vals, col_name, **kwargs):
 def df_add_condwise(df, vals, col_name, on_col='out_id', **kwargs):
     return _df_add(df, vals, col_name, on=on_col, **kwargs)
 
-def _df_add(df, vals, col_name, on, **kwargs):
+def _df_add(df: pd.DataFrame, vals: np.ndarray | pd.Series, col_name: str, on: str, **kwargs):
+    if isinstance(vals, pd.Series):
+        vals = pd.Series(vals.to_numpy(), name=col_name, **kwargs)
     if col_name in df:
         df = df.drop([col_name], axis=1)
-    df = df.join(pd.Series(vals, name=col_name, **kwargs), on=on)
+    df = df.join(vals, on=on)
     return df
 
 def stims2names(unique_ids, trialwise_names):

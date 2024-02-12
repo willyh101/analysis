@@ -151,7 +151,7 @@ class SetupDaqFile:
             rois = [f[r][:].reshape((-1)).astype(int) for r in rois_ref]
         return rois
             
-    def get_targets(self):
+    def get_targets(self) -> np.ndarray:
         with h5py.File(self.path, 'r') as f:
             ref = f['ExpStruct/Holo/holoRequests'][self.hrnum,0]
             targets = f[ref]['targets'][:].T.astype(int)

@@ -5,6 +5,7 @@ channels:
 dependencies:
  - python
  - pip
+ - setuptools
  - notebook
  - jupyterlab
  - numpy
@@ -20,8 +21,7 @@ dependencies:
  - scikit-image
  - imageio
  - imageio-ffmpeg
- - cython # for OASIS
- - cvxpy # for OASIS
+ - oasis-deconv
  - numba # optional, motion utils
  - mkl_fft # optional, motion utils
  - numexpr # pandas performance
@@ -30,12 +30,10 @@ dependencies:
  - pyarrow # pandas IO
  - zlib # pandas IO
  - pyyaml
+ - pytest
+ - tqdm
+ - tifffile
+ - python-dotenv
  - pip:
-   - pytest
    - scanimage-tiff-reader
-   - tqdm
-   - tifffile
-#   - pyqt5
    - jax[cpu]
-   - git+https://github.com/j-friedrich/OASIS
-   - python-dotenv

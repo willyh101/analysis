@@ -98,11 +98,9 @@ def df_add_condwise(df, vals, col_name, on_col='out_id', **kwargs):
     return _df_add(df, vals, col_name, on=on_col, **kwargs)
 
 def _df_add(df: pd.DataFrame, vals: np.ndarray | pd.Series, col_name: str, on: str, **kwargs):
-    if isinstance(vals, pd.Series):
-        vals = pd.Series(vals.to_numpy(), name=col_name, **kwargs)
     if col_name in df:
         df = df.drop([col_name], axis=1)
-    df = df.join(vals, on=on)
+    df = df.join(pd.Series(vals, name=col_name, **kwargs), on=on)
     return df
 
 def stims2names(unique_ids, trialwise_names):

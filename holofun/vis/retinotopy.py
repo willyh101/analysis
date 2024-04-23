@@ -170,8 +170,8 @@ class Retinotopy:
 def fit_all_ret(data: np.ndarray, base_win: tuple[int,int], response_win: tuple[int,int], 
                 locinds: np.ndarray, gridsize: int, baseline_resp = False, **kwargs) -> dict:
     
-    Ny = locinds[:,0].max()
-    Nx = locinds[:,1].max()
+    Ny = kwargs.pop('Ny', locinds[:,0].max())
+    Nx = kwargs.pop('Nx', locinds[:,1].max())
 
     if baseline_resp:
         win = (*base_win, *response_win)

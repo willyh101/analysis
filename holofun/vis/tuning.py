@@ -145,7 +145,10 @@ def get_cmi(cross, iso):
     return ((cross-iso)/(cross+iso))
 
 def get_smi(ctr, surr):
-    return ((ctr-surr)/(ctr+surr))
+    # return ((ctr-surr)/(ctr+surr))
+    return ((ctr-surr)/(surr))
+    # return ctr/surr
+
 
 def get_size_tc(mdf: pd.DataFrame, return_err=False):
     d = mdf.copy()
@@ -164,7 +167,9 @@ def get_pref_size(mdf: pd.DataFrame):
 
 def get_ssi(mdf: pd.DataFrame):
     resps = get_size_tc(mdf)
-    resps_at_pref = resps.loc[resps.sz == resps.pref_size, 'df'].to_numpy()
+    # resps_at_pref = resps.loc[resps.sz == resps.pref_size, 'df'].to_numpy()
+    resps_at_smallest = resps.loc[resps.sz == resps.sz.min(), 'df'].to_numpy()
     resps_at_largest = resps.loc[resps.sz == resps.sz.max(), 'df'].to_numpy()
-    ssi = get_smi(resps_at_pref, resps_at_largest)
+    # ssi = get_smi(resps_at_pref, resps_at_largest)
+    ssi = get_smi(resps_at_smallest, resps_at_largest)
     return pd.Series(ssi, name='ssi')

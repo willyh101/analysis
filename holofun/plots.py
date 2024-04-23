@@ -1,11 +1,18 @@
-import numpy as np
 import matplotlib.pyplot as plt
-import scipy.stats as stats
+import numpy as np
 import pandas as pd
+import scipy.stats as stats
 from matplotlib import axes
 
 from .stats import sem
 from .vis.retinotopy import Retinotopy
+
+
+MPL_RC_DEFAULT = {
+    'figure.figsize': (4,3),
+    'figure.constrained_layout.use': True
+}
+
 
 def scatter2hist(x, y, bins=(10,10), ax=None, do_log=False, **kwargs):
     """Generate a 2D histogram from scatter plot data. Bins can be int or tuple."""
@@ -20,7 +27,9 @@ def scatter2hist(x, y, bins=(10,10), ax=None, do_log=False, **kwargs):
 def plot_mean_dff(trwise_data: np.ndarray, cells=None, trials=None, xvals=None, fr=None, ax=None, 
                   falpha=0.5, label=None, **kwargs):
     if ax is None:
-       fig, ax = plt.subplots(1,1, figsize=(4,3), constrained_layout=True)
+    #    fig, ax = plt.subplots(1,1, figsize=(4,3), constrained_layout=True)
+        fig = plt.figure(figsize=(4,3))
+        ax = fig.subplots(1,1)
        
     if cells is None:
         cells = np.arange(trwise_data.shape[1])
@@ -114,7 +123,7 @@ def plot_tc(d: pd.DataFrame, cell: int, drop_grey_screen=True,
     kwargs.setdefault('linewidth', 2)
     
     ax.errorbar(xs, m, e, **kwargs)
-    ax.set_ylabel('$\Delta$F/F')
+    ax.set_ylabel('∆F/F')
     ax.set_xticks(xs)
     ax.set_xticklabels(xs, rotation=-45)
     

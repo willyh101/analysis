@@ -119,28 +119,30 @@ def nbsetup(despine=True, constrained=True, font=None):
         logging.warning('Failed to import pandas.')
 
     try:
-        import matplotlib as mpl
-        mpl.rcParams['savefig.dpi'] = 600 # default resolution for saving images in matplotlib
-        mpl.rcParams['savefig.format'] = 'pdf' # defaults to png for saved images (SVG is best, however)
-        mpl.rcParams['savefig.bbox'] = 'tight' # so saved graphics don't get chopped
-        mpl.rcParams['savefig.transparent'] = False
-        mpl.rcParams['image.cmap'] = 'viridis'
-        mpl.rcParams['ps.fonttype'] = 42
-        mpl.rcParams['savefig.transparent'] = False
-        mpl.rcParams['pdf.fonttype'] = 42
-        mpl.rcParams['figure.figsize'] = (4,3)
-        # add to remove seaborn dependency
-        if despine:
-            mpl.rcParams['axes.spines.top'] = False
-            mpl.rcParams['axes.spines.right'] = False
-        # mpl.rcParams['font.size'] = 10
-        if constrained:
-            mpl.rcParams['figure.constrained_layout.use'] = True
-        if font:
-            mpl.rcParams['font.sans-serif'] = [font]
-            mpl.rcParams['font.size'] = 12
+        mpl_custom_rc(despine, constrained, font)
     except ModuleNotFoundError:
         logging.warning('Failed to import matplotlib.')
+
+def mpl_custom_rc(despine, constrained, font):
+    import matplotlib as mpl
+    mpl.rcParams['savefig.dpi'] = 600 # default resolution for saving images in matplotlib
+    mpl.rcParams['savefig.format'] = 'pdf' # defaults to png for saved images (SVG is best, however)
+    mpl.rcParams['savefig.bbox'] = 'tight' # so saved graphics don't get chopped
+    mpl.rcParams['savefig.transparent'] = False
+    mpl.rcParams['image.cmap'] = 'viridis'
+    mpl.rcParams['ps.fonttype'] = 42
+    mpl.rcParams['savefig.transparent'] = False
+    mpl.rcParams['pdf.fonttype'] = 42
+    mpl.rcParams['figure.figsize'] = (4,3)
+
+    if despine:
+        mpl.rcParams['axes.spines.top'] = False
+        mpl.rcParams['axes.spines.right'] = False
+    if constrained:
+        mpl.rcParams['figure.constrained_layout.use'] = True
+    if font:
+        mpl.rcParams['font.sans-serif'] = [font]
+        mpl.rcParams['font.size'] = 12
 
 def flatten(t):
     return [item for sublist in t for item in sublist]
@@ -215,3 +217,9 @@ def failsgraceful(func):
             out = None
         return out
     return wrapper_failsgraceful
+
+def list_dirs(path: Path) -> list:
+    return [f for f in path.iterdir() if f.is_dir()]
+
+def ld(path: Path) -> list:
+    return list_dirs(path)

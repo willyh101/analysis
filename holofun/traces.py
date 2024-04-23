@@ -120,3 +120,8 @@ def roll_ind(A, r):
     column_indices = column_indices - r[:, np.newaxis]
 
     return A[rows, column_indices]
+
+def df2traces(df: pd.DataFrame):
+    """Converts a dataframe to a traces array. Aggregates by cell and frame using mean."""
+    traces = df.pivot_table(index='cell', columns='frame', values='df').values
+    return traces

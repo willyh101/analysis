@@ -6,7 +6,7 @@ def traces_from_csv(online_path, nplanes):
     online_data = pd.read_csv(online_path)
     online_data = online_data.set_index('frameNumber')
     new_idx = list(range(nplanes, online_data.index.max(), nplanes))
-    online_data_reindex = online_data.reindex(new_idx, index = 'frameNumber',method='nearest')
+    online_data_reindex = online_data.reindex(new_idx, index='frameNumber', method='nearest')
     online_arr=online_data_reindex.values[:,1:]
     online_arr=online_arr.T
     return online_arr

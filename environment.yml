@@ -3,7 +3,7 @@ channels:
  - conda-forge
  - intel
 dependencies:
- - python
+ - python=3.12
  - pip
  - setuptools
  - notebook
@@ -21,8 +21,8 @@ dependencies:
  - scikit-image
  - imageio
  - imageio-ffmpeg
- - oasis-deconv
- - numba # optional, motion utils
+#  - oasis-deconv
+ - numba # optional, motion utils, also pandas performance
  - mkl_fft # optional, motion utils
  - numexpr # pandas performance
  - bottleneck # pandas performance
@@ -34,6 +34,8 @@ dependencies:
  - tqdm
  - tifffile
  - python-dotenv
+ - jax
+ - ocl-icd-system # unsure why?
  - pip:
    - scanimage-tiff-reader
-   - jax[cpu]
+  #  - jax[cpu]

@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import numpy as np
 
-MINMAX = (0,150)
+MINMAX = (0,100)
 CHANNEL = 'r'
+CMAP = 'cividis'
 # don't use these options it will fuck up your coordinates!!
 XSLICE = slice(0,512)
 YSLICE = slice(0,512)
@@ -49,7 +50,7 @@ def make_mean_image(image_series):
 
 def click_cells(im):
     plt.clf()
-    plt.imshow(im)
+    plt.imshow(im, cmap=CMAP)
     plt.axis('off')
     plt.title('Click your cells. Press enter to quit.')
     pts = plt.ginput(n=-1, timeout=-1)

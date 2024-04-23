@@ -259,6 +259,12 @@ class SetupDaqFile:
         except:
             pass
         # print(decode(self.path, 'ExpStruct/EpochText2')[self.epoch])
+        
+    @staticmethod
+    def list_epochs(path):
+        with h5py.File(path, 'r') as f:
+            epochs = decode(path, 'ExpStruct/EpochText1')
+        return epochs
             
     @classmethod
     def load_file(cls, epoch, fr, rootdir='d:/frankenrig/experiments'):

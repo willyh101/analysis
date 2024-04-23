@@ -64,15 +64,26 @@ pth = sorted([f for f in root_data if f.is_dir()])
 # do prompt
 while True:
     print(f'Looking in: {expt_path}\n')
-    print('Type the number of the epochs to keep with spaces in between. (use 0-based indexing)')
-    print(f'(eg. -> 1 2 5 6)\n')
+    # print('Type the number of the epochs to keep with spaces in between. (use 0-based indexing)')
+    print('Type the number of the epochs to keep with spaces in between. (use 1-based indexing)')
+    print('Or type "a" to keep all epochs.')
+    print(f'(eg. -> 0 2 5 6)\n')
+    
 
     for i,p in enumerate(pth):
-        print(f'{i}: {p.stem}')
+        # print(f'{i}: {p.stem}')
+        print(f'{i+1}: {p.stem}')
 
     epoch_input = input('-> ')
-    epoch_list = epoch_input.split(' ')
-    epoch_idxs = [int(e) for e in epoch_list]
+    if epoch_input == '':
+        print('You must choose at least one epoch!')
+        continue
+    elif epoch_input == 'a':
+        epoch_idxs = list(range(len(pth)))
+    else:
+        epoch_list = epoch_input.split(' ')
+        # epoch_idxs = [int(e) for e in epoch_list]
+        epoch_idxs = [int(e)-1 for e in epoch_list]
 
     print('\nYou chose these epochs?')
     print('-------------------------')
@@ -100,33 +111,40 @@ save_path = str(Path(result_base, mouse, date, '_'.join(epoch_names)).as_posix()
 # append notes
 notes = input('\nNotes: ')
 
+# load ops
+try:
+    ops = getattr(s2p_ops, args.ops_dict)
+except AttributeError:
+    raise AttributeError(f'No ops dict named {args.ops_dict} in s2p_ops.py')
+
+# get datetime for run
+now = datetime.now()
+dt = now.strftime("%Y%m%d_%H%M%S")
+dt_nice_fmt = now.strftime("%Y-%m-%d %H:%M:%S")
+db_save_path = '__'.join([date, mouse, 'suite2p', dt])+'.yml'
+
 # save everything into a record file
 db_out = {
+    'run_time': dt_nice_fmt,
     'mouse': mouse,
     'date': date,
     'epochs': epoch_names,
     'result_folder': args.dest,
     'data_path': data_path,
     'save_path': save_path,
-    'notes': notes
+    'notes': notes,
+    'ops_dict_used': args.ops_dict,
+    'user_ops': ops
 }
-
-dt = datetime.now().strftime("%Y%m%d_%H%M%S")
-db_save_path = '__'.join([date, mouse, 'suite2p', dt])+'.yml'
 
 save_locs = [
     Path('/mnt/nvme/data/suite2p_outputs/db', db_save_path),
+    Path(save_path, 'suite2p', 'cli_params.yml')
     # Path('/mnt/synapse/db/suite2p')
 ]
 for sv in save_locs:
     with open(sv, 'w') as f:
         yaml.dump(db_out, f, default_flow_style=False)
-
-# load ops
-try:
-    ops = getattr(s2p_ops, args.ops_dict)
-except AttributeError:
-    raise AttributeError(f'No ops dict named {args.ops_dict} in s2p_ops.py')
 
 # setup s2p db
 tmp_tiff = SItiffCore(glob(data_path[0]+'/*.tif')[0])

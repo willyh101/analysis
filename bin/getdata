@@ -16,3 +16,7 @@ conda activate suite2p
 
 # s2p_cli $1 $2 --ops ops_8m
 s2p_cli $1 $2
+
+nautilus /mnt/nvme/data/suite2p_outputs/$1/$2
+
+suite2p

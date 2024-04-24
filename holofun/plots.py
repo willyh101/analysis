@@ -23,6 +23,18 @@ def scatter2hist(x, y, bins=(10,10), ax=None, do_log=False, **kwargs):
         h = np.log(h)
     ax.imshow(np.rot90(h), interpolation='nearest', **kwargs)
     return ax
+
+def line_fill(x, y, yerr, ax=None, label=None, line_color=None, fill_color=None, alpha=0.5, **kwargs):
+    """Create a line plot with a filled error region."""
+    color = kwargs.pop('color', None)
+    if color is not None:
+        line_color = color
+        fill_color = color
+    if ax is None:
+        ax = plt.gca()
+    ax.plot(x, y, label=label, color=line_color, **kwargs)
+    ax.fill_between(x, y-yerr, y+yerr, alpha=alpha, color=fill_color, **kwargs)
+    return ax
     
 def plot_mean_dff(trwise_data: np.ndarray, cells=None, trials=None, xvals=None, fr=None, ax=None, 
                   falpha=0.5, label=None, **kwargs):

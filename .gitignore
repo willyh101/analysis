@@ -2,6 +2,7 @@
 data/
 notebooks/
 papers/
+scratch/
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,python,windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,python,windows

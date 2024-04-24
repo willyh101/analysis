@@ -171,6 +171,10 @@ class Suite2pData:
             im = im[crop_mask]
         
         return im
+    
+    def list_epochs(self):
+        for i, ep in enumerate(self.epoch_names):
+            print(f'{i}: {ep}')
         
     @classmethod
     def from_names(cls, result_folder, mouse, date, epoch='*'):

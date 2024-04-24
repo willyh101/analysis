@@ -261,9 +261,12 @@ class SetupDaqFile:
         # print(decode(self.path, 'ExpStruct/EpochText2')[self.epoch])
         
     @staticmethod
-    def list_epochs(path):
+    def list_epochs(path, pprint=True):
         with h5py.File(path, 'r') as f:
             epochs = decode(path, 'ExpStruct/EpochText1')
+        if pprint:
+            for i, e in enumerate(epochs):
+                print(f'{i+1}: {e}')
         return epochs
             
     @classmethod

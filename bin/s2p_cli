@@ -142,7 +142,9 @@ save_locs = [
     Path(save_path, 'suite2p', 'cli_params.yml')
     # Path('/mnt/synapse/db/suite2p')
 ]
+
 for sv in save_locs:
+    sv.parent.mkdir(parents=True, exist_ok=True)
     with open(sv, 'w') as f:
         yaml.dump(db_out, f, default_flow_style=False)
 

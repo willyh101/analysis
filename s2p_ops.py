@@ -10,16 +10,16 @@ default_ops = {
     'combined': False,
     
     # registration
-    'do_registration': True, # 2 forces re-registration
+    'do_registration': 2, # 2 forces re-registration
     'keep_movie_raw': False, # must be true for 2 step reg
     'two_step_registration': False,
     'nimg_init': 1000, # subsampled frames for finding reference image
-    'batch_size': 5000, #2000, # number of frames per batch, default=500
+    'batch_size': 2000, #2000, # number of frames per batch, default=500
     'align_by_chan': 1, # 1-based, use 2 for tdT
     'smooth_sigma_time': 1., # set to 1 or 2 for low SNR data
     
     # non rigid registration settings
-    'nonrigid': False, # whether to use nonrigid registration
+    'nonrigid': True, # whether to use nonrigid registration
     
     # cell extraction
     'denoise': True,

@@ -1,22 +1,46 @@
 #!/usr/bin/env zsh
 
+OPTSTRING=":r"
+
+# check for the optional rerun flag and set it to false by default
+# if the flag is set, set it to true
+# the rerun flag is the only optional flag and is the final argument
+RERUN=-1
+while getopts ${OPTSTRING} arg; do
+    case ${arg} in
+        r)
+            RERUN=0
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" 1>&2
+            exit 1
+            ;;
+    esac
+done
+
 eval "$(conda shell.zsh hook)"
 
-conda activate analysis
-echo "First, moving files..."
-movedata $1 $2
 
-echo "Second, checking tiffs..."
-tiffchecker $1 $2 --verbose
-
-conda deactivate
-echo "All done, now to suite2p..."
+# check if rerun flag is set
+# if so, skip the first two steps
+if [ $RERUN ]; then
+    echo "Running suite2p only..."
+else
+    conda activate analysis
+    echo "First, moving files..."
+    movedata $1 $2
+    
+    echo "Second, checking tiffs..."
+    tiffchecker $1 $2 --verbose
+    conda deactivate
+    echo "All done, now to suite2p..."
+fi
 
 conda activate suite2p
 
 # s2p_cli $1 $2 --ops ops_8m
 s2p_cli $1 $2
 
-nautilus /mnt/nvme/data/suite2p_outputs/$1/$2
+nautilus /mnt/nvme/data/suite2p_outputs/$1/$2 &
 
 suite2p

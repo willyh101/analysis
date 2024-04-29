@@ -267,7 +267,6 @@ class SetupDaqFile:
         if pprint:
             for i, e in enumerate(epochs):
                 print(f'{i+1}: {e}')
-        return epochs
             
     @classmethod
     def load_file(cls, epoch, fr, rootdir='d:/frankenrig/experiments'):
@@ -336,11 +335,22 @@ def decode(daq_path, dataset):
     with h5py.File(daq_path, 'r') as f:
         try:
             strs = u''.join(chr(c) for c in f[dataset][:].squeeze())
+            strs = [i.replace('\x00\x00',' ') for i in strs]
             return strs
-        except:
+        except TypeError:
             # if there is an underlying dataset ref(s), go another level deep
-            strs = [u''.join(chr(c[0]) for c in f[ref]) for ref in f[dataset][:].squeeze()]
-            # this is a special case, but shouldn't hurt
+            strs = []
+            for ref in f[dataset][:].squeeze():
+                tmp = []
+                for c in f[ref]:
+                    if isinstance(c, np.ndarray):
+                        val = chr(c[0])
+                    else:
+                        # catches empty arrays
+                        val = chr(c)
+                    tmp.append(val)
+                strs.append(u''.join(tmp))
+            # this is a special case, but shouldn't hurt (don't remember what it's for)
             strs = [i.replace('\x00\x00',' ') for i in strs]
             return strs
         

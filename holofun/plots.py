@@ -40,7 +40,7 @@ def plot_mean_dff(trwise_data: np.ndarray, cells=None, trials=None, xvals=None, 
                   falpha=0.5, label=None, **kwargs):
     if ax is None:
     #    fig, ax = plt.subplots(1,1, figsize=(4,3), constrained_layout=True)
-        fig = plt.figure(figsize=(4,3))
+        fig = plt.figure(figsize=(3,2))
         ax = fig.subplots(1,1)
        
     if cells is None:
@@ -62,6 +62,8 @@ def plot_mean_dff(trwise_data: np.ndarray, cells=None, trials=None, xvals=None, 
     
     ax.plot(x, mm, label=label, **kwargs)
     ax.fill_between(x, mm+err, mm-err, edgecolor=None, alpha=falpha, **kwargs)
+    ax.set_ylabel('∆F/F')
+    ax.set_xlabel('Time (s)')
     
     return ax
 

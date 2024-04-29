@@ -144,7 +144,7 @@ def size_tuning_pipeline(df: pd.DataFrame, mdf: pd.DataFrame, lim: int = None):
         ssi[ssi < -lim] = lim
         ssi[ssi > lim] = lim
 
-    for series in list(pref_size, ssi):
+    for series in [pref_size, ssi]:
         df.join(series, on='cell')
         mdf.join(series, on='cell')
 

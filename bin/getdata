@@ -5,11 +5,11 @@ OPTSTRING=":r"
 # check for the optional rerun flag and set it to false by default
 # if the flag is set, set it to true
 # the rerun flag is the only optional flag and is the final argument
-RERUN=-1
+RERUN=0
 while getopts ${OPTSTRING} arg; do
     case ${arg} in
         r)
-            RERUN=0
+            RERUN=1
             ;;
         \?)
             echo "Invalid option: -$OPTARG" 1>&2
@@ -23,7 +23,7 @@ eval "$(conda shell.zsh hook)"
 
 # check if rerun flag is set
 # if so, skip the first two steps
-if [ $RERUN ]; then
+if [ $RERUN -eq 1 ]; then
     echo "Running suite2p only..."
 else
     conda activate analysis

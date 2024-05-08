@@ -159,13 +159,13 @@ def get_size_tc(mdf: pd.DataFrame, return_err=False):
     else:
         return m
 
-def get_pref_size(mdf: pd.DataFrame):
+def get_pref_size(mdf: pd.DataFrame) -> pd.Series:
     sz_df = get_size_tc(mdf)
     pref_sizes = sz_df.set_index('sz').groupby('cell')['df'].idxmax()
     pref_sizes.name = 'pref_size'
     return pref_sizes
 
-def get_ssi(mdf: pd.DataFrame):
+def get_ssi(mdf: pd.DataFrame) -> pd.Series:
     resps = get_size_tc(mdf)
     # resps_at_pref = resps.loc[resps.sz == resps.pref_size, 'df'].to_numpy()
     resps_at_smallest = resps.loc[resps.sz == resps.sz.min(), 'df'].to_numpy()

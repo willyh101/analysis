@@ -132,7 +132,7 @@ def plot_tc(d: pd.DataFrame, cell: int, drop_grey_screen=True,
         
     m = vals[vals.cell == cell].groupby('ori').mean()['df']
     e = vals[vals.cell == cell].groupby('ori').sem()['df']
-    xs = vals[vals.cell == cell].groupby('ori').mean().index
+    xs = vals[vals.cell == cell].groupby('ori').mean().index.astype(int)
     
     kwargs.setdefault('linewidth', 2)
     

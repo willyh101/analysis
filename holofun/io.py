@@ -25,6 +25,7 @@ def load_ori_data(path):
     stims = mat['stimParams'].item()
     out = {
         'ori': stims[0,:],
+        'sz': stims[1,:],
         'size': stims[1,:],
         'contrast': stims[4,:]
     }

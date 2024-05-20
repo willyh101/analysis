@@ -134,6 +134,7 @@ def mpl_custom_rc(despine, constrained, font):
     mpl.rcParams['savefig.transparent'] = False
     mpl.rcParams['pdf.fonttype'] = 42
     mpl.rcParams['figure.figsize'] = (4,3)
+    mpl.rcParams['animation.html'] = 'html5'
 
     if despine:
         mpl.rcParams['axes.spines.top'] = False

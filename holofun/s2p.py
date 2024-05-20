@@ -33,7 +33,7 @@ class Suite2pData:
             raise NameError('You must select the root suite2p folder.')
         
         # file locations, stat, and ops files
-        self.plane_folders = list(self.path.glob('plane*'))
+        self.plane_folders = sorted(self.path.glob('plane*'))
         self.epoch_names = self.path.parent.name.split('_')
         self.ops = [np.load(f/'ops.npy', allow_pickle=True).item() for f in self.plane_folders]
         self.stats = [np.load(f/'stat.npy', allow_pickle=True) for f in self.plane_folders]

@@ -64,6 +64,11 @@ class Suite2pData:
         
     def get_motion(self, z=0):
         return eucl_motion(self.ops[z]['xoff'], self.ops[z]['yoff'])
+    
+    def get_epoch_rigid_motion(self, epoch: int, z=0) -> np.ndarray:
+        motion = self.get_motion(z)
+        epoch_motion = np.split(motion, np.cumsum(self.ops[0]['frames_per_folder']))
+        return epoch_motion[epoch]
         
     def get_stat_iscell(self):
         stat_combined = np.concatenate(self.stats)

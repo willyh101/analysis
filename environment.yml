@@ -1,7 +1,7 @@
 name: analysis
 channels: 
  - conda-forge
- - intel
+#  - intel
 dependencies:
  - python=3.12
  - pip
@@ -23,7 +23,7 @@ dependencies:
  - imageio-ffmpeg
 #  - oasis-deconv
  - numba # optional, motion utils, also pandas performance
- - mkl_fft # optional, motion utils
+#  - mkl_fft # optional, motion utils
  - numexpr # pandas performance
  - bottleneck # pandas performance
  - pytables # pandas performance
@@ -36,6 +36,9 @@ dependencies:
  - python-dotenv
  - jax
  - ocl-icd-system # unsure why?
+#  - seaborn-image
+#  - xmovie
+ - altair-all
  - pip:
    - scanimage-tiff-reader
   #  - jax[cpu]

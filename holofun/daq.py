@@ -91,6 +91,17 @@ class SetupDaqFile:
                 vis_stims.append(count_daq_pulses(arr))
         return np.array(vis_stims)
     
+    def get_vis_stims_2ch(self):
+        with h5py.File(self.path, 'r') as f:
+            ch1 = []
+            ch2 = []
+            for s in self.sweeps:
+                arr = f[f['ExpStruct/digitalSweeps'][s][0]][self.pt_cond_ch,:]
+                ch1.append(count_daq_pulses(arr))
+                arr2 = f[f['ExpStruct/digitalSweeps'][s][0]][self.pt_clk_ch,:]
+                ch2.append(count_daq_pulses(arr2))
+        return np.array([ch1, ch2])
+    
     def get_binary_vis_stim(self):
         with h5py.File(self.path, 'r') as f:
             vis_stims = []
@@ -109,6 +120,7 @@ class SetupDaqFile:
         with h5py.File(self.path, 'r') as f:
             start = []
             stop = []
+            bad_count = 0
             for s in self.sweeps:
                 swp = f[f['ExpStruct/digitalSweeps'][s][0]][self.pt_flip_ch,:]
                 ts = np.where(np.diff(swp))[0]
@@ -116,12 +128,18 @@ class SetupDaqFile:
                 # append vis stim times
                 try:
                     # this will fail if we missed a vis stim entirely (but not for null conditions)
-                    start.append(ts[0]/self.rate)
-                    stop.append(ts[1]/self.rate)
+                    this_start = ts[0]/self.rate
+                    this_stop = ts[1]/self.rate
+                    start.append(this_start)
+                    stop.append(this_stop)
 
                 except:
                     start.append(np.nan)
                     stop.append(np.nan)
+                    bad_count += 1
+                    
+            if bad_count > 0:
+                logging.warning(f'Uh oh.. {bad_count} trials had missing vis stim times.')
                     
             vis_times = np.array([start, stop])
                     
@@ -148,7 +166,10 @@ class SetupDaqFile:
         with h5py.File(self.path, 'r') as f:
             ref = f['ExpStruct/Holo/holoRequests'][self.hrnum,0]
             rois_ref = f[ref]['rois'][:].squeeze()
-            rois = [f[r][:].reshape((-1)).astype(int) for r in rois_ref]
+            try:
+                rois = [f[r][:].reshape((-1)).astype(int) for r in rois_ref]
+            except TypeError: # if there is only one roi
+                rois = [f[rois_ref.reshape(-1)[0]][:].reshape(-1).astype(int)]
         return rois
             
     def get_targets(self) -> np.ndarray:

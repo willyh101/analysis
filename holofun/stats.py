@@ -7,6 +7,16 @@ RNG = np.random.default_rng()
 def sem(data, axis=0):
     return data.std(axis)/np.sqrt(data.shape[axis])
 
+def _ci(arr, interval=0.95):
+    n = len(arr)
+    m, se = np.mean(arr), stats.sem(arr)
+    h = se * stats.t.ppf((1 + interval) / 2, n-1)
+    return m, m-h, m+h
+
+def ci(arr, interval=0.95):
+    inter = stats.t.interval(interval, len(arr)-1, loc=np.mean(arr), scale=stats.sem(arr))
+    return np.abs(np.mean(arr) - inter[0])
+
 def sumsquares(x, y, func, popt):
     residuals = y - func(x, *popt)
     return np.sum(residuals**2)

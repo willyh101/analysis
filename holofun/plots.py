@@ -4,7 +4,7 @@ import pandas as pd
 import scipy.stats as stats
 from matplotlib import axes
 
-from .stats import sem
+from .stats import ci, sem
 from .vis.retinotopy import Retinotopy
 
 
@@ -160,12 +160,34 @@ def plot_cell_ret(ret_data: np.ndarray, ret_fit: Retinotopy):
         
     # fig.subplots_adjust(wspace=.01, hspace=.01)
     plt.show()
+
+def get_all_axes():
+    return plt.gcf().get_axes()
     
 def update_all(axes: np.ndarray, **kwargs):
-    for ax in axes.ravel():
+    all_axes = get_all_axes()
+    for ax in all_axes:
         for k,v in kwargs.items():
             fxn = eval(f'ax.{k}')
             fxn(v)
+
+def remove_ticks():
+    all_axes = get_all_axes()
+    for ax in all_axes:
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+def restore_spines():
+    all_axes = get_all_axes()
+    for ax in all_axes:
+        ax.spines['top'].set_visible(True)
+        ax.spines['right'].set_visible(True)
+
+def remove_spines():
+    all_axes = get_all_axes()
+    for ax in all_axes:
+        for side in ['top', 'right', 'left', 'bottom']:
+            ax.spines[side].set_visible(False)
             
 def scatter_eq_axis(x: np.ndarray, y:np.ndarray, xy_max=None, xy_min=0, fit=False, fit_color='r', 
                     nticks=3, kde=False, ax=None, **kwargs) -> axes.Axes:
@@ -257,3 +279,26 @@ def jitter_xy(y, cat_idx, jitter=0.1):
     n = len(y)
     x = cat_idx + rng.normal(size=n) * jitter
     return x,y
+
+def paired_plot(a=None, b=None, data=None, ax=None, show_pval=True, **kwargs):
+    """Paired comparison plot with error bars."""
+    if ax is None:
+        ax = plt.gca()
+    if isinstance(a, pd.DataFrame) and b is None:
+        data = a
+    if data is None:
+        data = pd.DataFrame(np.array([a,b]).T, columns=['A','B'])
+        
+    kwargs.setdefault('c', 'tab:blue')
+    kwargs.setdefault('alpha', 0.5)
+    
+    ax.plot(data.T, **kwargs)
+    ax.errorbar(y=[*data.mean()], x=[0,1], yerr=[*data.agg(ci)], c='k', lw=2)
+    ax.set_xlim(-0.2, 1.2)
+    ax.set_ylim(data.min().min(), data.max().max()*1.2)
+    
+    if show_pval:
+        result = stats.ttest_rel(a=data.iloc[:,0], b=data.iloc[:,1])
+        ax.text(x=0.5, y=data.max().max()*1.1, s=f'p={result.pvalue:.5f}', ha='center')
+        
+    return ax

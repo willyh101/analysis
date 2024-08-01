@@ -1,46 +1,66 @@
 #!/usr/bin/env zsh
 
-OPTSTRING=":r"
+OPTSTRING=":rsm"
 
 # check for the optional rerun flag and set it to false by default
 # if the flag is set, set it to true
 # the rerun flag is the only optional flag and is the final argument
 RERUN=0
+NOGUI=0
+USE8M=0
 while getopts ${OPTSTRING} arg; do
     case ${arg} in
-        r)
-            RERUN=1
-            ;;
+        r) RERUN=1 ;;
+        s) NOGUI=1 ;;
+        m) USE8M=1 ;;
         \?)
-            echo "Invalid option: -$OPTARG" 1>&2
-            exit 1
-            ;;
+          echo "Invalid option: -$OPTARG" 1>&2
+          exit 1 ;;
     esac
 done
 
+#shift away the parsed options to access the positional arguments
+shift $((OPTIND -1))
+
+
+# begin processing pipeline
 eval "$(conda shell.zsh hook)"
 
+if [ $NOGUI -eq 1 ]; then
+    echo "Running in silent/no-gui mode..."
+fi
 
 # check if rerun flag is set
 # if so, skip the first two steps
 if [ $RERUN -eq 1 ]; then
     echo "Running suite2p only..."
 else
+    # move files
     conda activate analysis
     echo "First, moving files..."
     movedata $1 $2
     
+    # check tiffs
     echo "Second, checking tiffs..."
     tiffchecker $1 $2 --verbose
     conda deactivate
     echo "All done, now to suite2p..."
 fi
 
+# run suite2p
 conda activate suite2p
+if [ $USE8M -eq 1 ]; then
+    echo "Running suite2p with gcamp8m ops..."
+    s2p_cli $1 $2 --ops ops_8m
+else
+    echo "Running suite2p..."
+    s2p_cli $1 $2
+fi
 
-# s2p_cli $1 $2 --ops ops_8m
-s2p_cli $1 $2
-
-nautilus /mnt/nvme/data/suite2p_outputs/$1/$2 &
-
-suite2p
+if [ $NOGUI -eq 1 ]; then
+    conda deactivate
+    exit 0
+else
+    nautilus /mnt/nvme/data/suite2p_outputs/$1/$2 &
+    suite2p
+fi

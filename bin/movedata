@@ -129,8 +129,8 @@ else:
     
 # search for other PT files and download
 if vis_loc_new.exists():
-    visfiles_2 = vis_loc_new.glob(date+'_*')
-    if len(list(visfiles_2)) > 0:
+    visfiles_2 = list(vis_loc_new.glob(date+'_*'))
+    if len(visfiles_2) > 0:
         print('Found PT vis stim file(s) in the new directory. Downloading...')
         for f in visfiles_2:
             shutil.copy(f, dst)

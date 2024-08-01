@@ -46,19 +46,20 @@ default_ops = {
 
 _ops_8m_mods = {
     # general
-    # 'diameter': 8, # shrink the diameter for ST 8m
-    'diameter': 8, # for zoom 2
-    'tau': 0.1, # 8m is quite fast
+    'diameter': 8, # shrink the diameter for ST 8m
+    'tau': 0.2, # 8m is quite fast
+    'do_registration': True, # 2 forces re-registration
+    'spatial_scale': 1,
     
     # registration
-    'do_registration': True, # 2 forces re-registration
-    'two_step_registration': False,
+    # 'do_registration': True, # 2 forces re-registration
+    # 'two_step_registration': False,
     
     # cell extraction
      'threshold_scaling': 0.6,
 
      # custom
-     'remove_artifacts': (80, 512-80)
+    #  'remove_artifacts': (80, 512-80)
 }
 
 ops_8m = {**default_ops, **_ops_8m_mods}

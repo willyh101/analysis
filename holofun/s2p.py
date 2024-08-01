@@ -12,6 +12,12 @@ def eucl_motion(x_off, y_off):
     offsets = offsets - np.median(offsets, axis=1).reshape(-1,1)
     return np.linalg.norm(offsets, axis=0)
 
+def eucl_motion_nonrigid(x_off, y_off):
+    """Calcule euclidian distance of motion frame by frame for non-rigid correction."""
+    offsets = np.array([x_off, y_off])
+    offsets = offsets - np.median(offsets, axis=0)
+    return np.linalg.norm(offsets, axis=0)
+
 def neuropil_subtract(F_raw, Neu, np_coeff):
     return F_raw - np_coeff*Neu
 
@@ -69,7 +75,12 @@ class Suite2pData:
         motion = self.get_motion(z)
         epoch_motion = np.split(motion, np.cumsum(self.ops[0]['frames_per_folder']))
         return epoch_motion[epoch]
-        
+    
+    def get_epoch_nonrigid_motion(self, epoch: int, z=0) -> np.ndarray:
+        motion = eucl_motion_nonrigid(self.ops[z]['xoff1'], self.ops[z]['yoff1'])
+        epoch_motion = np.split(motion, np.cumsum(self.ops[0]['frames_per_folder']))
+        return epoch_motion[epoch]
+    
     def get_stat_iscell(self):
         stat_combined = np.concatenate(self.stats)
         iscell = self.iscell[:,0].astype(bool)
@@ -164,7 +175,7 @@ class Suite2pData:
         xpix = stat['xpix']#[~stat['overlap']]
         
         im = np.zeros((self.ops[0]['Ly'], self.ops[0]['Lx']))
-        if isinstance(maskval, int):
+        if isinstance(maskval, (int, float)):
             im[ypix,xpix] = maskval
         else:
             im[ypix,xpix] = stat['lam']
@@ -193,3 +204,8 @@ class Suite2pData:
         print(f'Opened s2p folder: {path}')
         # this calls the init
         return cls(path)
+    
+class Suite2pDataExtended(Suite2pData):
+    def __init__(self, s2p_path: str) -> None:
+        super().__init__(s2p_path)
+        self.epoch_names = self.path.parent.name.split('_')

@@ -4,7 +4,7 @@ import scipy.stats as stats
 
 from ..analysis import _ttest_rel_df, _wilcoxon_df, _increase_test_df, _ranksum_df, df_add_cellwise
 
-def find_vis_resp(df, p=0.05, test='anova', vis_key='ori', **kwargs):
+def find_vis_resp(df, p=0.05, test='anova', vis_key='ori', quiet=False, **kwargs):
     """
     Takes a mean dataframe (see meanby) and finds visually responsive cells using 
     a 1-way ANOVA test.
@@ -29,7 +29,8 @@ def find_vis_resp(df, p=0.05, test='anova', vis_key='ori', **kwargs):
 
     n = vis_cells.size
     c = p_vals.size
-    print(f'There are {n} visually responsive cells, out of {c} ({n/c*100:.2f}%) <across conds>')
+    if not quiet:
+        print(f'There are {n} visually responsive cells, out of {c} ({n/c*100:.2f}%) <across conds>')
 
     return vis_cells, p_vals
 

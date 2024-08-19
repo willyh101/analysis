@@ -68,7 +68,7 @@ def process_oasis(s2p: Suite2pData, epoch: int, pre_time: int, penalty=0, optimi
 
 def ori_vis_pipeline(df: pd.DataFrame, 
                      analysis_window: tuple | np.ndarray,
-                     use_pre_post=False, **kwargs) -> tuple[pd.DataFrame]:
+                     use_pre_post=False, **kwargs) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Runs the visual analysis pipeline on a DataFrame. Creates and returns
     the mean DataFrame, finds visually responsive cells, finds preferred and

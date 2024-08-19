@@ -44,7 +44,7 @@ def pdir(df: pd.DataFrame):
 
     return pref_dir
 
-def get_tc(mdf, drop_grey_screen=True, ori=False, return_err=False):
+def get_tc(mdf: pd.DataFrame, drop_grey_screen=True, ori=False, return_err=False):
     if drop_grey_screen:
         vals = mdf.loc[mdf.ori >= 0].copy()
     else:

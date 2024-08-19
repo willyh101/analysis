@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as stats
 from matplotlib import axes
+import logging
 
 from .stats import ci, sem
 from .vis.retinotopy import Retinotopy
@@ -235,10 +236,13 @@ def scatter_eq_axis(x: np.ndarray, y:np.ndarray, xy_max=None, xy_min=0, fit=Fals
     ax.set_aspect('equal', 'box')
     
     if fit:
-        m,b = np.polyfit(x, y, 1)
-        xrng = np.arange(0,xy_max,0.01)
-        yfit = (m*xrng)+b
-        ax.plot(xrng, yfit, c=fit_color)
+        try:
+            m,b = np.polyfit(x, y, 1)
+            xrng = np.arange(0,xy_max,0.01)
+            yfit = (m*xrng)+b
+            ax.plot(xrng, yfit, c=fit_color)
+        except:
+            logging.warning('Failed to fit line to data.')
         
     return ax
 
@@ -250,6 +254,19 @@ def estimate_kde(x: np.ndarray, y: np.ndarray):
     return x,y,z
 
 def df_scatter_eq(x: str, y: str, data: pd.DataFrame, kde=False, **kwargs) -> axes.Axes:
+    """
+    Creates a scatter plot from a pandas DataFrame with equal axis sizes.
+
+    Parameters:
+        x (str): The column name in the DataFrame for the x-axis data.
+        y (str): The column name in the DataFrame for the y-axis data.
+        data (pd.DataFrame): The DataFrame containing the data to plot.
+        kde (bool, optional): Whether to estimate and color the data points by their kernel density. Defaults to False.
+        **kwargs: Additional keyword arguments to pass to the scatter plot function.
+
+    Returns:
+        axes.Axes: The matplotlib Axes object containing the scatter plot.
+    """
     xdata = data.loc[:,x]
     ydata = data.loc[:,y]
     
@@ -265,6 +282,21 @@ def df_scatter_eq(x: str, y: str, data: pd.DataFrame, kde=False, **kwargs) -> ax
     return ax
 
 def histfill(vals, bw=100, ax=None, fill_alpha=0.4, label=None, color=None, **kwargs):
+    """
+    Plots a histogram of the given values with filled bars.
+
+    Parameters:
+        vals (array-like): The values to be plotted.
+        bw (int, optional): The number of bins in the histogram. Default is 100.
+        ax (matplotlib.axes.Axes, optional): The axes on which the histogram is plotted. If not provided, the current axes are used.
+        fill_alpha (float, optional): The transparency of the filled bars. Default is 0.4.
+        label (str, optional): The label for the plot.
+        color (str, optional): The color of the plot.
+        **kwargs: Additional keyword arguments to be passed to the plot.
+
+    Returns:
+        matplotlib.axes.Axes: The axes object with the plotted histogram.
+    """
     if ax is None:
         ax = plt.gca()
     ys, xs = np.histogram(vals, bw)

@@ -10,7 +10,7 @@ default_ops = {
     'combined': False,
     
     # registration
-    'do_registration': 2, # 2 forces re-registration
+    'do_registration': True, # 2 forces re-registration
     'keep_movie_raw': False, # must be true for 2 step reg
     'two_step_registration': False,
     'nimg_init': 1000, # subsampled frames for finding reference image
@@ -23,13 +23,13 @@ default_ops = {
     
     # cell extraction
     'denoise': True,
-    'threshold_scaling': 0.7, # adjust the automatically determined threshold by this scalar multiplier, was 1. (WH) # 0.6 for low signal, default 5
+    'threshold_scaling': 1.0, # adjust the automatically determined threshold by this scalar multiplier, was 1. (WH) # 0.6 for low signal, default 5
     'sparse_mode': True,
-    'max_iterations': 300, # usualy stops at threshold scaling, default 20
+    'max_iterations': 20, # usualy stops at threshold scaling, default 20
     'high_pass': 50,  # running mean subtraction with window of size 'high_pass' (use low values for 1P), default 100
     'classifier_path': '/home/will/code/suite2p/suite2p/classifiers/classifier.npy',
     'max_overlap': 0.5,  # cells with more overlap than this get removed during triage, before refinement
-    'nbinned': 5000,  # number of binned frames for cell detection, default: 5000
+    'nbinned': 10000,  # number of binned frames for cell detection, default: 5000
     'spatial_scale': 2,  # spatial scale of the data, depends on microscope, 1 (=6 pixels), 2 (=12 pixels), 3 (=24 pixels), or 4 (=48 pixels)
     'spatial_hp_detect': 25, # (int, default: 25) window for spatial high-pass filtering for neuropil 
 

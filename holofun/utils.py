@@ -179,6 +179,8 @@ def make_paths(mouse, date, result_base='suite2p_outputs', tiff_base='/mnt/hdd/d
         'img800': tiff_path.rglob('*800_*.tif*'),
         'ori': tiff_path.rglob('*ori*[!PSTHs_new][!PSTHs].mat'), 
         'ret': tiff_path.rglob('*ret*[!PSTHs_new][!PSTHs].mat'),
+        'vis_slc': tiff_path.rglob('*sm_lg_crs_screen.mat'),
+        'fg_expt': tiff_path.rglob('*surround_stim.mat'),
         'si_online': tiff_path.rglob('*IntegrationRois*.csv'),
         'mat': tiff_path.rglob('*.mat')
     }

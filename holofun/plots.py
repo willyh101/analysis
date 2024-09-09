@@ -5,7 +5,7 @@ import scipy.stats as stats
 from matplotlib import axes
 import logging
 
-from .stats import ci, sem
+from .stats import ci, sem, fit_fast
 from .vis.retinotopy import Retinotopy
 
 
@@ -237,9 +237,7 @@ def scatter_eq_axis(x: np.ndarray, y:np.ndarray, xy_max=None, xy_min=0, fit=Fals
     
     if fit:
         try:
-            m,b = np.polyfit(x, y, 1)
-            xrng = np.arange(0,xy_max,0.01)
-            yfit = (m*xrng)+b
+            xrng, yfit = fit_fast(x, y)
             ax.plot(xrng, yfit, c=fit_color)
         except:
             logging.warning('Failed to fit line to data.')

@@ -115,3 +115,22 @@ def splitcorr(arr, frac=0.5, nboot=10000):
         cc = stats.pearsonr(a1,a2)[0]
         ccs.append(cc)
     return np.array(ccs)
+
+def fit_fast(x: np.ndarray, y: np.ndarray):
+    """
+    Fits a linear regression model to the given data points using the pseudoinverse. Adapted from
+    seaborn regressions.
+
+    Parameters:
+    - x (np.ndarray): The input array of x-coordinates.
+    - y (np.ndarray): The input array of y-coordinates.
+
+    Returns:
+    - x_fit (np.ndarray): The x-coordinates of the fitted line.
+    - y_fit (np.ndarray): The y-coordinates of the fitted line.
+    """
+    grid = np.linspace(x.min(), x.max(), 100)
+    x_, y_ = np.c_[np.ones_like(x), x], y
+    grid = np.c_[np.ones_like(grid), grid]
+    yhat = grid.dot(np.linalg.pinv(x_).dot(y_))
+    return grid[:,1], yhat

@@ -191,7 +191,7 @@ def remove_spines():
             ax.spines[side].set_visible(False)
             
 def scatter_eq_axis(x: np.ndarray, y:np.ndarray, xy_max=None, xy_min=0, fit=False, fit_color='r', 
-                    nticks=3, kde=False, ax=None, **kwargs) -> axes.Axes:
+                    nticks=3, kde=False, add_mean=False, mean_est=ci, ax=None, **kwargs) -> axes.Axes:
     """
     Plot a scatter plot relating X and Y with equal axis sizes and optionally a reference line and
     optionally a fit line.
@@ -215,10 +215,10 @@ def scatter_eq_axis(x: np.ndarray, y:np.ndarray, xy_max=None, xy_min=0, fit=Fals
     kwargs.setdefault('s', 6)
     
     if xy_max is None:
-        xy_max = np.nanmax([x,y]) * 1.1
-
+        _, xy_max = calculate_xy_limits(x, y)
+    
     if xy_min is None:
-        xy_min = np.nanmin([x,y]) * 1.1
+        xy_min, _ = calculate_xy_limits(x, y)
         
     if kde:
         x,y,cdata = estimate_kde(x,y)
@@ -227,6 +227,10 @@ def scatter_eq_axis(x: np.ndarray, y:np.ndarray, xy_max=None, xy_min=0, fit=Fals
     
     ax.scatter(x, y, **kwargs)
     ax.plot([xy_min,xy_max], [xy_min,xy_max], c='k', ls='--')
+        
+    if add_mean:
+        ax.errorbar(np.nanmean(x), np.nanmean(y), xerr=mean_est(x), yerr=mean_est(y), 
+                    fmt='-o', color=kwargs['color'])
     
     ax.set_xlim(xy_min, xy_max)
     ax.set_ylim(xy_min, xy_max)
@@ -243,6 +247,14 @@ def scatter_eq_axis(x: np.ndarray, y:np.ndarray, xy_max=None, xy_min=0, fit=Fals
             logging.warning('Failed to fit line to data.')
         
     return ax
+
+def calculate_xy_limits(x, y, modifier=1.1):
+    data_max = np.nanmax([x,y])
+    data_min = np.nanmin([x,y])
+    data_range = data_max - data_min
+    adj_min = data_min - (data_range * (modifier-1))
+    adj_max = data_max + (data_range * (modifier-1))
+    return adj_min, adj_max
 
 def estimate_kde(x: np.ndarray, y: np.ndarray):
     xy = np.vstack([x, y])
@@ -331,4 +343,28 @@ def paired_plot(a=None, b=None, data=None, ax=None, show_pval=True, **kwargs):
         result = stats.ttest_rel(a=data.iloc[:,0], b=data.iloc[:,1])
         ax.text(x=0.5, y=data.max().max()*1.1, s=f'p={result.pvalue:.5f}', ha='center')
         
+    return ax
+
+def plot_means_eq(x: pd.Series, y: pd.Series, err_func=ci, ax=None, **kwargs):
+    """Plot means with error bars."""
+    if ax is None:
+        ax = plt.gca()
+    xy_min, xy_max = calculate_xy_limits(x, y)
+    x_agg = x.agg(['mean', err_func])
+    y_agg = y.agg(['mean', err_func])
+    ax.plot([xy_min,xy_max], [xy_min,xy_max], c='k', ls='--')
+    ax.errorbar(x_agg['mean'], y_agg['mean'], xerr=x_agg.iloc[1], yerr=y_agg.iloc[1], 
+                fmt='-o', **kwargs)
+    ax.set_xlim(xy_min, xy_max)
+    ax.set_ylim(xy_min, xy_max)
+    ax.set_aspect('equal', 'box')
+    return ax
+
+def plot_means_eq_df(data: pd.DataFrame, x: str, y: str, **kwargs):
+    """Plot means with error bars from a DataFrame."""
+    xvals = data.loc[:,x]
+    yvals = data.loc[:,y]
+    ax = plot_means_eq(xvals, yvals, **kwargs)
+    ax.set_xlabel(x)
+    ax.set_ylabel(y)
     return ax

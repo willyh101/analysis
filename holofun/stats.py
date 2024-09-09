@@ -134,3 +134,14 @@ def fit_fast(x: np.ndarray, y: np.ndarray):
     grid = np.c_[np.ones_like(grid), grid]
     yhat = grid.dot(np.linalg.pinv(x_).dot(y_))
     return grid[:,1], yhat
+
+def array_split_corr(arr, return_pval=False):
+    arr_shuffled = RNG.permutation(arr)
+    half1, half2 = np.array_split(arr_shuffled, 2)
+    if half1.shape[0] != half2.shape[0]:
+        half1 = half1[:-1]
+    corr, pval = stats.pearsonr(half1, half2)
+    if return_pval:
+        return corr, pval
+    else:
+        return corr

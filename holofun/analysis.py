@@ -5,6 +5,7 @@ import scipy.stats as stats
 from sklearn.neighbors import KDTree
 
 from holofun.constants import PX_PER_UM, UM_PER_PIX
+from holofun.stats import array_split_corr
 from holofun.traces import df_add_cellwise
 
 
@@ -245,3 +246,14 @@ def fit_xy_line(x: np.ndarray, y: np.ndarray):
     xr = np.arange(x.min()*0.9, x.max()*1.1, 0.1)
     yfit = m*xr + b
     return xr, yfit
+
+def create_unique_id(df: pd.DataFrame, cols: list[str]) -> pd.Series:
+    """Create a unique ID for a dataframe based on columns."""
+    combined_values = df[cols].astype(str).agg('_'.join, axis=1)
+    return pd.factorize(combined_values)[0]
+
+def measure_max_trialwise_correlation(mdf: pd.DataFrame, col: str):
+    """Measure the correlation between trials for each cell, returning the max per condition on col."""
+    data = mdf.groupby(['cell', col])['df'].aggregate(array_split_corr)
+    max_corrs = data.groupby(level='cell').max()
+    return max_corrs

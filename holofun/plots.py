@@ -345,14 +345,15 @@ def paired_plot(a=None, b=None, data=None, ax=None, show_pval=True, **kwargs):
         
     return ax
 
-def plot_means_eq(x: pd.Series, y: pd.Series, err_func=ci, ax=None, **kwargs):
+def plot_means_eq(x: pd.Series, y: pd.Series, err_func=ci, ax=None, union=True, **kwargs):
     """Plot means with error bars."""
     if ax is None:
         ax = plt.gca()
     xy_min, xy_max = calculate_xy_limits(x, y)
     x_agg = x.agg(['mean', err_func])
     y_agg = y.agg(['mean', err_func])
-    ax.plot([xy_min,xy_max], [xy_min,xy_max], c='k', ls='--')
+    if union:
+        ax.plot([xy_min,xy_max], [xy_min,xy_max], c='k', ls='--')
     ax.errorbar(x_agg['mean'], y_agg['mean'], xerr=x_agg.iloc[1], yerr=y_agg.iloc[1], 
                 fmt='-o', **kwargs)
     ax.set_xlim(xy_min, xy_max)

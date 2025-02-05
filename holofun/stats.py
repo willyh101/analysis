@@ -145,3 +145,9 @@ def array_split_corr(arr, return_pval=False):
         return corr, pval
     else:
         return corr
+    
+def log_fold_change(a, b):
+    psuedocount = 0.1
+    A = np.maximum(a, psuedocount)
+    B = np.maximum(b, psuedocount)
+    return np.log10(B/A)

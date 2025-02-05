@@ -282,7 +282,7 @@ def df_scatter_eq(x: str, y: str, data: pd.DataFrame, kde=False, **kwargs) -> ax
     
     if kde:
         xdata,ydata,cdata = estimate_kde(xdata,ydata)
-        kwargs.pop('color')
+        kwargs.pop('color', None)
         kwargs['c'] = cdata
         
     ax = scatter_eq_axis(xdata, ydata, **kwargs)
@@ -322,7 +322,7 @@ def jitter_xy(y, cat_idx, jitter=0.1):
     x = cat_idx + rng.normal(size=n) * jitter
     return x,y
 
-def paired_plot(a=None, b=None, data=None, ax=None, show_pval=True, **kwargs):
+def paired_plot(a=None, b=None, data=None, ax=None, show_pval=True, use_ttest=False, **kwargs):
     """Paired comparison plot with error bars."""
     if ax is None:
         ax = plt.gca()
@@ -340,22 +340,27 @@ def paired_plot(a=None, b=None, data=None, ax=None, show_pval=True, **kwargs):
     ax.set_ylim(data.min().min(), data.max().max()*1.2)
     
     if show_pval:
-        result = stats.ttest_rel(a=data.iloc[:,0], b=data.iloc[:,1])
+        if use_ttest:
+            result = stats.ttest_rel(a=data.iloc[:,0], b=data.iloc[:,1])
+        else:
+            result = stats.wilcoxon(x=data.iloc[:,0], y=data.iloc[:,1])
         ax.text(x=0.5, y=data.max().max()*1.1, s=f'p={result.pvalue:.5f}', ha='center')
         
     return ax
 
-def plot_means_eq(x: pd.Series, y: pd.Series, err_func=ci, ax=None, union=True, **kwargs):
+def plot_means_eq(x: pd.Series, y: pd.Series, err_func='ci', ax=None, union=True, **kwargs):
     """Plot means with error bars."""
     if ax is None:
         ax = plt.gca()
     xy_min, xy_max = calculate_xy_limits(x, y)
+    if err_func == 'ci':
+        err_func = ci
     x_agg = x.agg(['mean', err_func])
     y_agg = y.agg(['mean', err_func])
     if union:
         ax.plot([xy_min,xy_max], [xy_min,xy_max], c='k', ls='--')
     ax.errorbar(x_agg['mean'], y_agg['mean'], xerr=x_agg.iloc[1], yerr=y_agg.iloc[1], 
-                fmt='-o', **kwargs)
+                fmt='-', **kwargs)
     ax.set_xlim(xy_min, xy_max)
     ax.set_ylim(xy_min, xy_max)
     ax.set_aspect('equal', 'box')
@@ -368,4 +373,49 @@ def plot_means_eq_df(data: pd.DataFrame, x: str, y: str, **kwargs):
     ax = plot_means_eq(xvals, yvals, **kwargs)
     ax.set_xlabel(x)
     ax.set_ylabel(y)
+    return ax
+
+def catplot(colors, alpha=0.5, ax=None, skws=None, mkws=None, 
+            err_func=ci, colors_vary=False, **data):
+    if ax is None:
+        ax = plt.gca()
+    if skws is None:
+        skws = {}
+    if mkws is None:
+        mkws = {}
+    mkws.setdefault('color', 'k')
+    mkws.setdefault('linestyle', 'none')
+    mkws.setdefault('marker', 'o')
+    mkws.setdefault('markersize', 5)
+    mkws.setdefault('capsize', 5)
+
+    xs = []
+    ys = []
+    cs = []
+    for i, (k,v) in enumerate(data.items()):
+        if isinstance(v, pd.Series):
+            data[k] = v.values
+        x_,y_ = jitter_xy(v, i)
+        xs.append(x_)
+        ys.append(y_)
+        cs.extend([colors[i]]*len(v))
+        
+    ax.scatter(xs, ys, color=cs, alpha=alpha, **skws)
+
+    if not colors_vary:
+        ax.errorbar(
+            x=[x.mean() for x in xs], 
+            y=[y.mean() for y in ys], 
+            yerr=[err_func(y) for y in ys],
+            **mkws
+        )
+    else:
+        mkws.pop('color')
+        for i,c in enumerate(colors):
+            ax.errorbar(x=xs[i].mean(), y=ys[i].mean(), yerr=err_func(ys[i]), color=c, **mkws)
+    
+    ax.set_xticks(np.arange(len(data)))
+    ax.set_xticklabels(data.keys())
+    ax.set_xlim(-0.5, len(data)-0.5)
+
     return ax

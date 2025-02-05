@@ -94,14 +94,16 @@ def verifyrun(func):
 def replace_tup_ix(tup, ix, val):
     return tup[:ix] + (val,) + tup[ix+1:]
 
-def nbsetup(despine=True, constrained=True, font=None):
+def nbsetup(despine=True, constrained=True, font=None, use_svg=False):
     try:
         if __IPYTHON__:
             get_ipython().magic('load_ext autoreload')
             get_ipython().magic('autoreload 3')
             get_ipython().magic('matplotlib inline')
-            get_ipython().magic("config InlineBackend.figure_format = 'retina'")
-            # get_ipython().magic("config InlineBackend.figure_format = 'svg'")
+            if use_svg:
+                get_ipython().magic("config InlineBackend.figure_format = 'svg'")
+            else:
+                get_ipython().magic("config InlineBackend.figure_format = 'retina'")
     except NameError:
         pass
     

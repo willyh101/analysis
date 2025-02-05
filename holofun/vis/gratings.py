@@ -139,6 +139,10 @@ class Window:
         plt.imshow(self.window, cmap='gray', vmin=0, vmax=255)
         plt.show()
 
+    def get_window(self):
+        """Returns a copy of the window"""
+        return self.window.copy()
+
 def display_grating(im):
     plt.figure(figsize=(4,4))
     plt.imshow(im, cmap='gray', vmin=0, vmax=255)

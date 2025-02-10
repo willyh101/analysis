@@ -106,28 +106,28 @@ def nbsetup(despine=True, constrained=True, font=None, use_svg=False):
                 get_ipython().magic("config InlineBackend.figure_format = 'retina'")
     except NameError:
         pass
-    
-    # try:
-    #     import seaborn as sns
-    #     # sns.set_style('ticks',{'axes.spines.right': False, 'axes.spines.top': False}) # removes annoying top and right axis
-    #     # sns.set_context('notebook') # can change to paper, poster, talk, notebook
-    # except ModuleNotFoundError:
-    #     logging.warning('Failed to import seaborn.')
         
     try:
         import pandas as pd
         pd.set_option('display.max_columns',10) # limits printing of dataframes
+        pd.set_option('display.precision', 7)
     except ModuleNotFoundError:
         logging.warning('Failed to import pandas.')
 
+    try:
+        import numpy as np
+        np.set_printoptions(precision=5, legacy='1.25')
+    except ModuleNotFoundError:
+        logging.warning('Failed to import numpy.')
+        
     try:
         mpl_custom_rc(despine, constrained, font)
     except ModuleNotFoundError:
         logging.warning('Failed to import matplotlib.')
 
-def mpl_custom_rc(despine, constrained, font):
+def mpl_custom_rc(despine, constrained, font=None, font_size=10):
     import matplotlib as mpl
-    mpl.rcParams['savefig.dpi'] = 600 # default resolution for saving images in matplotlib
+    mpl.rcParams['savefig.dpi'] = 300 # default resolution for saving images in matplotlib
     mpl.rcParams['savefig.format'] = 'pdf' # defaults to png for saved images (SVG is best, however)
     mpl.rcParams['savefig.bbox'] = 'tight' # so saved graphics don't get chopped
     mpl.rcParams['savefig.transparent'] = False
@@ -138,14 +138,28 @@ def mpl_custom_rc(despine, constrained, font):
     mpl.rcParams['figure.figsize'] = (4,3)
     mpl.rcParams['animation.html'] = 'html5'
 
+    # new plotting styles
+    mpl.rcParams['axes.titlesize'] = font_size
+    mpl.rcParams['axes.labelsize'] = font_size
+    mpl.rcParams['xtick.labelsize'] = font_size
+    mpl.rcParams['ytick.labelsize'] = font_size
+    mpl.rcParams['figure.dpi'] = 150
+    mpl.rcParams['lines.linewidth'] = 1.5
+    mpl.rcParams['axes.linewidth'] = 1
+    mpl.rcParams['xtick.major.size'] = 5
+    mpl.rcParams['xtick.minor.size'] = 1
+    mpl.rcParams['ytick.major.size'] = 5
+    mpl.rcParams['ytick.minor.size'] = 1
+
     if despine:
         mpl.rcParams['axes.spines.top'] = False
         mpl.rcParams['axes.spines.right'] = False
     if constrained:
         mpl.rcParams['figure.constrained_layout.use'] = True
     if font:
+        mpl.rcParams['font.family'] = 'sans-serif'
         mpl.rcParams['font.sans-serif'] = [font]
-        mpl.rcParams['font.size'] = 12
+        mpl.rcParams['font.size'] = font_size
 
 def flatten(t):
     return [item for sublist in t for item in sublist]

@@ -263,7 +263,7 @@ def estimate_kde(x: np.ndarray, y: np.ndarray):
     x,y,z = xy[0,idx], xy[1,idx], z[idx]
     return x,y,z
 
-def df_scatter_eq(x: str, y: str, data: pd.DataFrame, kde=False, **kwargs) -> axes.Axes:
+def df_scatter_eq(x: str, y: str, data: pd.DataFrame, kde=False, log=False, **kwargs) -> axes.Axes:
     """
     Creates a scatter plot from a pandas DataFrame with equal axis sizes.
 
@@ -279,6 +279,10 @@ def df_scatter_eq(x: str, y: str, data: pd.DataFrame, kde=False, **kwargs) -> ax
     """
     xdata = data.loc[:,x]
     ydata = data.loc[:,y]
+    
+    if log:
+        xdata = np.log(xdata)
+        ydata = np.log(ydata)
     
     if kde:
         xdata,ydata,cdata = estimate_kde(xdata,ydata)
@@ -377,6 +381,8 @@ def plot_means_eq_df(data: pd.DataFrame, x: str, y: str, **kwargs):
 
 def catplot(colors, alpha=0.5, ax=None, skws=None, mkws=None, 
             err_func=ci, colors_vary=False, **data):
+    if isinstance(err_func, str):
+        err_func = eval(err_func)
     if ax is None:
         ax = plt.gca()
     if skws is None:
@@ -404,15 +410,15 @@ def catplot(colors, alpha=0.5, ax=None, skws=None, mkws=None,
 
     if not colors_vary:
         ax.errorbar(
-            x=[x.mean() for x in xs], 
-            y=[y.mean() for y in ys], 
+            x=[np.nanmean(x) for x in xs], 
+            y=[np.nanmean(y) for y in ys], 
             yerr=[err_func(y) for y in ys],
             **mkws
         )
     else:
         mkws.pop('color')
         for i,c in enumerate(colors):
-            ax.errorbar(x=xs[i].mean(), y=ys[i].mean(), yerr=err_func(ys[i]), color=c, **mkws)
+            ax.errorbar(x=np.nanmean(xs[i]), y=np.nanmean(ys[i]), yerr=err_func(ys[i]), color=c, **mkws)
     
     ax.set_xticks(np.arange(len(data)))
     ax.set_xticklabels(data.keys())

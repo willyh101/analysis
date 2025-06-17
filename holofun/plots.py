@@ -342,6 +342,7 @@ def paired_plot(a=None, b=None, data=None, ax=None, show_pval=True, use_ttest=Fa
     ax.errorbar(y=[*data.mean()], x=[0,1], yerr=[*data.agg(ci)], c='k', lw=2)
     ax.set_xlim(-0.2, 1.2)
     ax.set_ylim(data.min().min(), data.max().max()*1.2)
+    ax.set_xticks([0,1])
     
     if show_pval:
         if use_ttest:
@@ -379,6 +380,37 @@ def plot_means_eq_df(data: pd.DataFrame, x: str, y: str, **kwargs):
     ax.set_ylabel(y)
     return ax
 
+def catscatter(colors, alpha=0.5, ax=None, skws=None, **data):
+    if ax is None:
+        ax = plt.gca()
+    if skws is None:
+        skws = {}
+    if isinstance(colors, str):
+        colors = [colors]
+    if len(colors) == 1:
+        colors *= len(data)
+        
+    skws.setdefault('edgecolor', 'none')
+    skws.setdefault('s', 8)
+    
+    xs = []
+    ys = []
+    cs = []
+    for i, (k,v) in enumerate(data.items()):
+        if isinstance(v, pd.Series):
+            data[k] = v.values
+        x_,y_ = jitter_xy(v, i)
+        xs.append(x_)
+        ys.append(y_)
+        cs.extend([colors[i]]*len(v))
+        
+    ax.scatter(xs, ys, color=cs, alpha=alpha, **skws)
+    ax.set_xticks(np.arange(len(data)))
+    ax.set_xticklabels(data.keys())
+    ax.set_xlim(-0.5, len(data)-0.5)
+    
+    return ax
+    
 def catplot(colors, alpha=0.5, ax=None, skws=None, mkws=None, 
             err_func=ci, colors_vary=False, **data):
     if isinstance(err_func, str):
@@ -389,11 +421,16 @@ def catplot(colors, alpha=0.5, ax=None, skws=None, mkws=None,
         skws = {}
     if mkws is None:
         mkws = {}
+    if isinstance(colors, str):
+        colors = [colors]
+    if len(colors) == 1:
+        colors *= len(data)
     mkws.setdefault('color', 'k')
     mkws.setdefault('linestyle', 'none')
     mkws.setdefault('marker', 'o')
     mkws.setdefault('markersize', 5)
     mkws.setdefault('capsize', 5)
+    skws.setdefault('edgecolor', 'none')
 
     xs = []
     ys = []

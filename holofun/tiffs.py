@@ -60,12 +60,12 @@ class SItiff(SItiffCore):
         green_ch = self.mean_img(z_idx, 0, scaling=gscale)
         red_ch = self.mean_img(z_idx, 1, scaling=rscale)
         
-        rgb_im = np.zeros((*green_ch.shape, 3))
-        rgb_im[:,:,0] = red_ch
-        rgb_im[:,:,1] = green_ch
+        rgb_im = np.zeros((*green_ch.shape, 3), dtype=np.uint8)
+        rgb_im[:,:,0] = exposure.rescale_intensity(red_ch, out_range=np.uint8)
+        rgb_im[:,:,1] = exposure.rescale_intensity(green_ch, out_range=np.uint8)
         
         if green_as_cyan:
-            rgb_im[:,:,2] = green_ch
+            rgb_im[:,:,2] = exposure.rescale_intensity(green_ch, out_range=np.uint8)
             
         return rgb_im
     
@@ -80,34 +80,34 @@ class SItiff(SItiffCore):
         return ax
     
     def show(self, z_idx, ch_idx, scaling=None, as_rgb=False, rgb_ch=None, ax=None, 
-             ch_label_txt=None, ch_label_color='white', **kwargs):
+             ch_label_txt=None, ch_label_color='white', annotate=True, **kwargs):
         
         if ax is None:
             ax = plt.gca()
             
         mean_img = self.mean_img(z_idx, ch_idx, scaling=scaling, as_rgb=as_rgb, rgb_ch=rgb_ch, **kwargs)
         
-        
-        # note I don't think this will work will multiple colors since you can't specify per line
-        fontdict = {
-            'size':18,
-            'color':ch_label_color
-        }
-        label = AnchoredText(ch_label_txt, loc='upper left', prop=fontdict,
-                             frameon=False, pad=0.2, borderpad=0.2)
-        
-        fontprops = fm.FontProperties(size=18)
-        scalebar = AnchoredSizeBar(ax.transData, 
-                                128,
-                                f'200 $\mu$m',
-                                'lower right',
-                                pad=0.2,
-                                color='white',
-                                frameon=False,
-                                size_vertical=8,
-                                fontproperties=fontprops)
-        ax.add_artist(scalebar)
-        ax.add_artist(label)
+        if annotate:
+            # note I don't think this will work will multiple colors since you can't specify per line
+            fontdict = {
+                'size':18,
+                'color':ch_label_color
+            }
+            label = AnchoredText(ch_label_txt, loc='upper left', prop=fontdict,
+                                frameon=False, pad=0.2, borderpad=0.2)
+            
+            fontprops = fm.FontProperties(size=18)
+            scalebar = AnchoredSizeBar(ax.transData, 
+                                    128,
+                                    f'200 µm',
+                                    'lower right',
+                                    pad=0.2,
+                                    color='white',
+                                    frameon=False,
+                                    size_vertical=8,
+                                    fontproperties=fontprops)
+            ax.add_artist(scalebar)
+            ax.add_artist(label)
         ax.imshow(mean_img)
         ax.axis('off')
         

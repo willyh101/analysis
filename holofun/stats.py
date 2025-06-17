@@ -6,6 +6,8 @@ RNG = np.random.default_rng()
 
 def sem(data, axis=0):
     return data.std(axis)/np.sqrt(data.shape[axis])
+    # data = np.array(data)
+    # return np.nanstd(data, axis=axis)/np.sqrt(data.shape[axis])
 
 def _ci(arr, interval=0.95):
     n = len(arr)
@@ -146,8 +148,22 @@ def array_split_corr(arr, return_pval=False):
     else:
         return corr
     
-def log_fold_change(a, b):
-    psuedocount = 0.1
+def log_fold_change(a, b, base=2, psuedocount=0.1):
     A = np.maximum(a, psuedocount)
     B = np.maximum(b, psuedocount)
-    return np.log10(B/A)
+    if base == 2:
+        return np.log2(B/A)
+    elif base == 10:
+        return np.log10(B/A)
+    else:
+        ValueError('Base not supported. Use 2 or 10')
+
+def significance_stars(p):
+    if p < 0.001:
+        return '***'
+    if p < 0.01:
+        return '**'
+    if p < 0.05:
+        return "*"
+    else:
+        return 'ns'

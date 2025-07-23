@@ -125,7 +125,7 @@ def nbsetup(despine=True, constrained=True, font=None, use_svg=False):
     except ModuleNotFoundError:
         logging.warning('Failed to import matplotlib.')
 
-def mpl_custom_rc(despine, constrained, font=None, font_size=10):
+def mpl_custom_rc(despine, constrained, font=None, font_size=9):
     import matplotlib as mpl
     mpl.rcParams['savefig.dpi'] = 300 # default resolution for saving images in matplotlib
     mpl.rcParams['savefig.format'] = 'pdf' # defaults to png for saved images (SVG is best, however)
@@ -135,7 +135,7 @@ def mpl_custom_rc(despine, constrained, font=None, font_size=10):
     mpl.rcParams['ps.fonttype'] = 42
     mpl.rcParams['savefig.transparent'] = False
     mpl.rcParams['pdf.fonttype'] = 42
-    mpl.rcParams['figure.figsize'] = (4,3)
+    mpl.rcParams['figure.figsize'] = (3,2)
     mpl.rcParams['animation.html'] = 'html5'
 
     # new plotting styles

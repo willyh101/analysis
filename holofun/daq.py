@@ -67,7 +67,7 @@ class SetupDaqFile:
                 hrnum = hr_nums[0] - 1 # just take the first hr number from the list
             except IndexError:
                 raise IndexError('This holoRequest does not exist.')
-        return hrnum
+        return int(hrnum)
             
     def get_sweeps(self):
         """this is set up to have an extra trial for slicing"""
@@ -281,6 +281,9 @@ class SetupDaqFile:
             pass
         # print(decode(self.path, 'ExpStruct/EpochText2')[self.epoch])
         
+    def list(self, pprint=True):
+        SetupDaqFile.list_epochs(self.path, pprint=pprint)
+        
     @staticmethod
     def list_epochs(path, pprint=True):
         with h5py.File(path, 'r') as f:
@@ -399,3 +402,25 @@ def calculate_trial_run_speed(rotary_sweep: np.ndarray, fr: float,
     trial_speed = run_frame_bins / 360 * wheel_circum / binwidth
 
     return trial_speed
+
+
+class Daq:
+    def __init__(self, path, epoch, fr):
+        self.path = path # path to .mat file
+        self.epoch = epoch - 1 # matlab -> python indexing fix
+        self.fr = fr # frame rate
+        
+        self.rate = 20000
+        self.pt_flip_ch = 5
+        self.pt_clk_ch = 4
+        self.pt_cond_ch = 3
+        self.run_ch = 0
+        self.wheel_circum = 47.75
+        
+        # experiment info
+        self.date = decode(path, 'ExpStruct/date')
+        self.mouse = decode(path, 'ExpStruct/Expt_Params/ExpType')
+        self.genotype = decode(path, 'ExpStruct/Expt_Params/genotype')
+        self.virus = decode(path, 'ExpStruct/Expt_Params/virus')
+        self.imaging_params = decode(path, 'ExpStruct/Expt_Params/slice')
+        self.pmts = decode(path, 'ExpStruct/Expt_Params/PMTs')

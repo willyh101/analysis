@@ -141,14 +141,17 @@ def get_osi_vecsum(arr, dirs):
     val = np.sqrt(costerm**2 + sinterm**2)/sumterm
     return val
 
+def get_osi(pref, ortho):
+    return _osi(pref, ortho)
+
 def get_cmi(cross, iso):
     return ((cross-iso)/(cross+iso))
 
-def get_smi(ctr, surr):
-    # return ((ctr-surr)/(ctr+surr))
-    return ((ctr-surr)/(surr))
-    # return ctr/surr
+def get_ssi(ctr, other):
+    return ((ctr-other)/ctr)
 
+def get_smi(ctr, surr):
+    return (ctr - surr) / (ctr)
 
 def get_size_tc(mdf: pd.DataFrame, return_err=False):
     d = mdf.copy()
@@ -173,3 +176,21 @@ def get_ssi(mdf: pd.DataFrame) -> pd.Series:
     # ssi = get_smi(resps_at_pref, resps_at_largest)
     ssi = get_smi(resps_at_smallest, resps_at_largest)
     return pd.Series(ssi, name='ssi')
+
+def get_csi(R_small, R_pref, R_blank):
+    """Contrast suppression index."""
+    return (R_small - R_blank) / (R_pref - R_blank)
+    # return R_small / R_pref 
+
+
+def get_smod(R_large, R_blank, R_pref):
+    """Surround modulation index."""
+    # return (R_large) / (R_pref)
+    return (R_large - R_blank) / (R_pref - R_blank)
+
+def get_ssi_rates(R_pref, R_large, R_blank):
+    """Suppression index."""
+    return (R_pref - R_large) / (R_pref - R_blank)
+
+def celc_keller_ss(ctr, other):
+    return 1 - (other / ctr)

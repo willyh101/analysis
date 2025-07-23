@@ -78,10 +78,10 @@ class Retinotopy:
         
     def calculate_grid(self, expand_by=1):
             
-        x_rng = np.linspace(-(self.Nx-1)*self.gridsize/2/self.gridsample, 
-                            (self.Nx-1)*self.gridsize/2/self.gridsample, self.Nx*expand_by)
-        y_rng = np.linspace(-(self.Ny-1)*self.gridsize/2/self.gridsample, 
-                            (self.Ny-1)*self.gridsize/2/self.gridsample, self.Ny*expand_by)
+        x_rng = np.linspace(-((self.Nx-1)*self.gridsize/2/self.gridsample), 
+                            ((self.Nx-1)*self.gridsize/2/self.gridsample), self.Nx*expand_by)
+        y_rng = np.linspace(-((self.Ny-1)*self.gridsize/2/self.gridsample), 
+                            ((self.Ny-1)*self.gridsize/2/self.gridsample), self.Ny*expand_by)
         
         xx,yy = np.meshgrid(x_rng, y_rng)
         

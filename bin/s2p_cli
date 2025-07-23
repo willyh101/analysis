@@ -67,7 +67,7 @@ while True:
     # print('Type the number of the epochs to keep with spaces in between. (use 0-based indexing)')
     print('Type the number of the epochs to keep with spaces in between. (use 1-based indexing)')
     print('Or type "a" to keep all epochs.')
-    print(f'(eg. -> 0 2 5 6)\n')
+    print(f'(eg. -> 1 2 5 6)\n')
     
 
     for i,p in enumerate(pth):

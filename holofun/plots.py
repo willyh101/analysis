@@ -165,7 +165,7 @@ def plot_cell_ret(ret_data: np.ndarray, ret_fit: Retinotopy):
 def get_all_axes():
     return plt.gcf().get_axes()
     
-def update_all(axes: np.ndarray, **kwargs):
+def update_all(axes: np.ndarray = None, **kwargs):
     all_axes = get_all_axes()
     for ax in all_axes:
         for k,v in kwargs.items():
@@ -380,9 +380,54 @@ def plot_means_eq_df(data: pd.DataFrame, x: str, y: str, **kwargs):
     ax.set_ylabel(y)
     return ax
 
-def catscatter(colors, alpha=0.5, ax=None, skws=None, **data):
+def simplecat(vals:list, cats=None, alpha=0.5, c='cornflowerblue', ax=None, jit=0.1, 
+              skws=None, mkws=None, add_ct=None, ct_rng=0.25):
     if ax is None:
         ax = plt.gca()
+    if cats is None:
+        cats = np.arange(len(vals))
+    if skws is None:
+        skws = {}
+    if mkws is None:
+        mkws = {}
+    mkws.setdefault('color', 'k')
+    mkws.setdefault('linestyle', 'none')
+    mkws.setdefault('marker', 'o')
+    mkws.setdefault('markersize', 5)
+    mkws.setdefault('capsize', 5)
+    skws.setdefault('edgecolor', 'none')
+    xs = []
+    ys = []
+    for i,y in enumerate(vals):
+        x_, y_ = jitter_xy(y, i, jitter=jit)
+        # xs.append(x_)
+        # ys.append(y_)
+        ax.scatter(x_, y_, color=c, alpha=alpha, **skws)
+    ax.set_xticks(np.arange(len(vals)))
+    ax.set_xticklabels(cats)
+    ax.set_xlim(-0.5, len(vals)-0.5)
+
+    if add_ct:
+        for i, v in enumerate(vals):
+            xmin = i-ct_rng
+            xmax = i+ct_rng
+            func = eval(f'np.{add_ct}')
+            ax.hlines(func(v), xmin=xmin, xmax=xmax, color='k', ls='--')    
+
+    return ax
+
+def simplecat_df(grp, cats, **kwargs):
+    gs=[]
+    for _,g in grp:
+        gs.append(g.values)
+    ax = simplecat(gs, cats, **kwargs)
+    return ax
+
+def catscatter(colors, alpha=0.5, ax=None, skws=None, df=None, add_ct=False, ct_rng=0.25, s=10, **data):
+    if ax is None:
+        ax = plt.gca()
+    if isinstance(df, pd.DataFrame):
+        data = df.to_dict(orient='series')
     if skws is None:
         skws = {}
     if isinstance(colors, str):
@@ -391,7 +436,7 @@ def catscatter(colors, alpha=0.5, ax=None, skws=None, **data):
         colors *= len(data)
         
     skws.setdefault('edgecolor', 'none')
-    skws.setdefault('s', 8)
+    skws.setdefault('s', s)
     
     xs = []
     ys = []
@@ -402,12 +447,20 @@ def catscatter(colors, alpha=0.5, ax=None, skws=None, **data):
         x_,y_ = jitter_xy(v, i)
         xs.append(x_)
         ys.append(y_)
-        cs.extend([colors[i]]*len(v))
+        # cs.extend([colors[i]]*len(v))
+        # cs = colors[i]
         
-    ax.scatter(xs, ys, color=cs, alpha=alpha, **skws)
+        ax.scatter(x_, y_, color=colors[i], alpha=alpha, **skws)
     ax.set_xticks(np.arange(len(data)))
     ax.set_xticklabels(data.keys())
     ax.set_xlim(-0.5, len(data)-0.5)
+
+    if add_ct:
+        for i, (k,v) in enumerate(data.items()):
+            xmin = i-ct_rng
+            xmax = i+ct_rng
+            func = eval(f'np.{add_ct}')
+            ax.hlines(func(ys[i]), xmin=xmin, xmax=xmax, color='k', ls='--')    
     
     return ax
     

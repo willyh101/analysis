@@ -39,6 +39,7 @@ dependencies:
 #  - seaborn-image
 #  - xmovie
  - altair-all
+ - pingouin
  - pip:
    - scanimage-tiff-reader
   #  - jax[cpu]

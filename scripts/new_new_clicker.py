@@ -8,6 +8,7 @@ import numpy as np
 do_rgb = False
 cmap = 'cividis'
 ch = 1 # 0 for green, 1 for red
+scaling = (0, 150)
 
 root_dir = '/mnt/hdd/data2/experiments'
 
@@ -17,7 +18,7 @@ tiff = SItiff(file)
 
 all_pts = []
 for p in tiff.zs:
-    img_data = tiff.mean_img(p, ch, as_rgb=do_rgb)
+    img_data = tiff.mean_img(p, ch, scaling=scaling, as_rgb=do_rgb)
     fig, ax = plt.subplots(figsize=(5,5))
     im = ax.imshow(img_data, cmap=cmap)
     ax.set_title(f'Click the cells. (z = {p})')

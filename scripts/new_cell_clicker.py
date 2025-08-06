@@ -41,6 +41,7 @@ for p in tiff.zs:
     slider.on_changed(update)
     pts = plt.ginput(n=-1, timeout=-1)
     pts = [(*pt, p) for pt in pts]
+    all_pts.append(pts)
     
 fpath = Path(file).parent
 spath = fpath.parent/'clicked_cell_locs.npy'

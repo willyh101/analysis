@@ -1,9 +1,11 @@
-import matplotlib.pyplot as plt
-from holofun.tiffs import SItiff
-from holofun.simple_guis import openfilegui
-
 from pathlib import Path
+
+import matplotlib.pyplot as plt
 import numpy as np
+
+from holofun.simple_guis import openfilegui
+from holofun.tiffs import SItiff
+
 
 do_rgb = False
 cmap = 'cividis'
@@ -29,7 +31,7 @@ for p in tiff.zs:
     all_pts.append(pts)
     plt.close()
 
-fpath = Path(file).parent
+fpath = Path(file)
 spath = fpath.parent/'clicked_cell_locs.npy'
 all_pts = [item for sublist in all_pts for item in sublist]
 np.save(spath, all_pts)

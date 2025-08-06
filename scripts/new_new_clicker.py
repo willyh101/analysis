@@ -27,6 +27,7 @@ for p in tiff.zs:
     pts = fig.ginput(n=-1, timeout=-1)
     pts = [(*pt, p) for pt in pts]
     all_pts.append(pts)
+    plt.close()
 
 fpath = Path(file).parent
 spath = fpath.parent/'clicked_cell_locs.npy'

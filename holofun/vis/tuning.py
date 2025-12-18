@@ -168,12 +168,15 @@ def get_pref_size(mdf: pd.DataFrame) -> pd.Series:
     pref_sizes.name = 'pref_size'
     return pref_sizes
 
-def get_ssi(mdf: pd.DataFrame) -> pd.Series:
+def get_ssi(mdf: pd.DataFrame, at_size=None) -> pd.Series:
     resps = get_size_tc(mdf)
-    # resps_at_pref = resps.loc[resps.sz == resps.pref_size, 'df'].to_numpy()
-    resps_at_smallest = resps.loc[resps.sz == resps.sz.min(), 'df'].to_numpy()
+    if isinstance(at_size, (float, int)):
+        resps_at_smallest = resps.loc[resps.sz == at_size, 'df'].to_numpy()
+    elif at_size == 'pref_size':
+        resps_at_smallest = resps.loc[resps.sz == resps.pref_size, 'df'].to_numpy()
+    else:
+        resps_at_smallest = resps.loc[resps.sz == resps.sz.min(), 'df'].to_numpy()
     resps_at_largest = resps.loc[resps.sz == resps.sz.max(), 'df'].to_numpy()
-    # ssi = get_smi(resps_at_pref, resps_at_largest)
     ssi = get_smi(resps_at_smallest, resps_at_largest)
     return pd.Series(ssi, name='ssi')
 

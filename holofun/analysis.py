@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import scipy.optimize as sop
 import scipy.stats as stats
@@ -231,9 +232,10 @@ def split_and_corr_cells(df: pd.DataFrame, col: str, frac=0.5, replace=False):
     corr_vals = mrg.groupby(['cell'])[['df','df2']].corr().iloc[0::2,-1].values
     return corr_vals
 
-def single_cell_stim_distance(df: pd.DataFrame, cells: list[int], cols: list[str] = ['x','y'], 
+def single_cell_stim_distance(df: pd.DataFrame, cells: npt.ArrayLike, cols: list[str] = ['x','y'], 
                               cell_key: str = 'cell', out_str: str = 'dstim') -> pd.DataFrame:
     """Calculate the distance to a single cell of interest. Adds columns to df as dstim{cell}."""
+    cells = np.asarray(cells)
     cols_select = [cell_key] + cols
     stim_d_xy = df.loc[df[cell_key].isin(cells), cols_select].groupby(cell_key).first()
     for i in cells:
@@ -247,7 +249,7 @@ def fit_xy_line(x: np.ndarray, y: np.ndarray):
     yfit = m*xr + b
     return xr, yfit
 
-def create_unique_id(df: pd.DataFrame, cols: list[str]) -> pd.Series:
+def create_unique_id(df: pd.DataFrame, cols: list[str]) -> np.ndarray:
     """Create a unique ID for a dataframe based on columns."""
     combined_values = df[cols].astype(str).agg('_'.join, axis=1)
     return pd.factorize(combined_values)[0]

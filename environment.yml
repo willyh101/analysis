@@ -3,7 +3,7 @@ channels:
  - conda-forge
 #  - intel
 dependencies:
- - python=3.12
+ - python
  - pip
  - setuptools
  - notebook

@@ -5,7 +5,7 @@ import scipy.stats as stats
 from matplotlib import axes
 import logging
 
-from .stats import ci, sem, fit_fast
+from .stats import ci, sem, fit_fast, nansem, nanci
 from .vis.retinotopy import Retinotopy
 
 
@@ -321,7 +321,7 @@ def histfill(vals, bw=100, ax=None, fill_alpha=0.4, label=None, color=None, **kw
 def jitter_xy(y, cat_idx, jitter=0.1):
     """Jitter x values by a small amount for plotting categorical data."""
     rng = np.random.default_rng()
-    y = np.asarray(y)
+    y = np.array(y)
     n = len(y)
     x = cat_idx + rng.normal(size=n) * jitter
     return x,y
@@ -423,7 +423,8 @@ def simplecat_df(grp, cats, **kwargs):
     ax = simplecat(gs, cats, **kwargs)
     return ax
 
-def catscatter(colors, alpha=0.5, ax=None, skws=None, df=None, add_ct=False, ct_rng=0.25, s=10, **data):
+def catscatter(colors, alpha=0.5, ax=None, skws=None, df=None, add_ct=False, ct_rng=0.25,  s=10, 
+               max_vals=None, **data):
     if ax is None:
         ax = plt.gca()
     if isinstance(df, pd.DataFrame):
@@ -444,6 +445,10 @@ def catscatter(colors, alpha=0.5, ax=None, skws=None, df=None, add_ct=False, ct_
     for i, (k,v) in enumerate(data.items()):
         if isinstance(v, pd.Series):
             data[k] = v.values
+        if isinstance(max_vals, (int, float)):
+            max_vals=(max_vals, max_vals)
+        if isinstance(max_vals, tuple):
+            v = v.clip(*max_vals)
         x_,y_ = jitter_xy(v, i)
         xs.append(x_)
         ys.append(y_)

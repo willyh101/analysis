@@ -104,6 +104,17 @@ def nbsetup(despine=True, constrained=True, font=None, use_svg=False):
                 get_ipython().magic("config InlineBackend.figure_format = 'svg'")
             else:
                 get_ipython().magic("config InlineBackend.figure_format = 'retina'")
+    except AttributeError:
+        # fot update where ZMQ has not "magic"
+        get_ipython().run_line_magic('load_ext', 'autoreload')
+        get_ipython().run_line_magic('autoreload', '3')
+        get_ipython().run_line_magic('matplotlib', 'inline')
+        if use_svg:
+            display='svg'
+        else:
+            display='retina'
+        get_ipython().run_line_magic('config', f'InlineBackend.figure_format = "{display}"')
+
     except NameError:
         pass
         
@@ -237,8 +248,10 @@ def failsgraceful(func):
         return out
     return wrapper_failsgraceful
 
-def list_dirs(path: Path) -> list:
-    return [f for f in path.iterdir() if f.is_dir()]
+def list_dirs(path: str | Path) -> list:
+    if isinstance(path, str):
+        path = Path(path)
+    return [str(f) for f in path.iterdir() if f.is_dir()]
 
 def ld(path: Path) -> list:
     return list_dirs(path)

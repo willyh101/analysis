@@ -1,13 +1,20 @@
 import numpy as np
+import pandas as pd
 from scipy import stats
 from sklearn.metrics import mean_squared_error, r2_score
 
 RNG = np.random.default_rng()
 
 def sem(data, axis=0):
+    data = np.array(data)
     return data.std(axis)/np.sqrt(data.shape[axis])
     # data = np.array(data)
     # return np.nanstd(data, axis=axis)/np.sqrt(data.shape[axis])
+
+def nansem(data, axis=0):
+    # return data.std(axis)/np.sqrt(data.shape[axis])
+    data = np.array(data)
+    return np.nanstd(data, axis=axis)/np.sqrt(data.shape[axis])
 
 def _ci(arr, interval=0.95):
     n = len(arr)
@@ -18,6 +25,10 @@ def _ci(arr, interval=0.95):
 def ci(arr, interval=0.95):
     inter = stats.t.interval(interval, len(arr)-1, loc=np.mean(arr), scale=stats.sem(arr))
     return np.abs(np.mean(arr) - inter[0])
+
+def nanci(arr, interval=0.95):
+    inter = stats.t.interval(interval, len(arr)-1, loc=np.nanmean(arr), scale=stats.sem(arr, nan_policy='omit'))
+    return np.abs(np.nanmean(arr) - inter[0])
 
 def sumsquares(x, y, func, popt):
     residuals = y - func(x, *popt)
@@ -167,3 +178,33 @@ def significance_stars(p):
         return "*"
     else:
         return 'ns'
+    
+def hboot(df: pd.DataFrame, mouse: str, value: str, B: int = 10000, within_reduce='mean', 
+          across_reduce='mean', random_state: int | None = None):
+    
+    rng = np.random.default_rng(random_state)
+    groups = df.groupby(mouse)[value].apply(np.array)
+    mice = groups.index.to_numpy()
+    vecs = groups.to_dict()
+    M = len(mice)
+
+    within_reduce = eval(f'np.{within_reduce}')
+    across_reduce = eval(f'np.{across_reduce}')
+
+    # Observed estimate: equal-weight mean across mice
+    mouse_means = np.array([within_reduce(vecs[m]) for m in mice])
+    point = float(across_reduce(mouse_means))
+
+    # Bootstrap: resample mice, then resample cells within each mouse
+    boot = np.empty(B)
+    for i in range(B):
+        m_idx = rng.integers(0, M, size=M)
+        agg = []
+        for j in m_idx:
+            v = vecs[mice[j]]
+            rs = v[rng.integers(0, len(v), size=len(v))]
+            agg.append(within_reduce(rs))
+        boot[i] = across_reduce(np.array(agg))
+
+    lo, hi = np.percentile(boot, [2.5, 97.5])
+    return {"point": point, "ci": (float(lo), float(hi)), "boot": boot}

@@ -8,6 +8,7 @@ from .traces import (baseline_subtract, cut_psths, make_trialwise,
                      min_subtract, reravel, rolling_baseline_dff, unravel)
 from .vis.generic import find_vis_resp, find_vis_resp_pre_post
 from .vis.tuning import dsi, get_pref_size, get_ssi, osi, osi_vecsum, pdir, po
+from .vis import retinotopy
 
 
 def process_s2p(s2p: Suite2pData, epoch: int, pre_time: int, total_time=None, do_zscore=False,
@@ -128,7 +129,8 @@ def ori_vis_pipeline(df: pd.DataFrame,
     
     return df, mdf
 
-def size_tuning_pipeline(df: pd.DataFrame, mdf: pd.DataFrame, lim: int = None):
+def size_tuning_pipeline(df: pd.DataFrame, mdf: pd.DataFrame, lim: int = None, at_size=None,
+                         remove_blank_ori=True):
     """
     Run size tuning pipeline on mean dataframe that has size info.
 
@@ -136,9 +138,15 @@ def size_tuning_pipeline(df: pd.DataFrame, mdf: pd.DataFrame, lim: int = None):
         df (pd.DataFrame): dataframe of visual responses
         mdf (pd.DataFrame): mean response dataframe
         lim (int, optional): thresholding limit for SSI calculation. Defaults to None.
+        at_size (int, optional): size to use for center response. defaults to smallest.
+        remove_blank_ori (bool): whether to remove blank oris, defaults to True.
     """
-    pref_size = get_pref_size(mdf)
-    ssi = get_ssi(mdf)
+    if remove_blank_ori:
+        temp_df = mdf[mdf.ori > -1].copy()
+    else:
+        temp_df = mdf.copy()
+    pref_size = get_pref_size(temp_df)
+    ssi = get_ssi(temp_df, at_size)
 
     if lim is not None:
         ssi[ssi < -lim] = lim
@@ -151,3 +159,30 @@ def size_tuning_pipeline(df: pd.DataFrame, mdf: pd.DataFrame, lim: int = None):
         mdf = mdf.join(series, on='cell')
 
     return df, mdf
+
+def retino_pipeline(psths, baseline_window, response_window, ret_pt, baseline_resp=False, 
+                    rval_excl=0.1, pval_excl=0.05, center_aligned_radius=7, center_fov=(0,0)):
+    
+    # fit
+    print('Extracting retinotopy data.')
+    ret_result = retinotopy.fit_all_ret(
+        psths, 
+        base_win=baseline_window, 
+        response_win=response_window, 
+        baseline_resp = baseline_resp, 
+        **ret_pt
+    )
+    
+    # mark center-aligned cells
+    center_xyz = ret_result['ctr']
+    is_center_cell = retinotopy.find_center_cells(center_xyz, ctr_sz=center_aligned_radius, 
+                                                ctr_fov=center_fov)
+    
+    # exclusions
+    exclusions = np.logical_or.reduce([
+        np.isnan(ret_result['pvals']),
+        # (ret_result['rvals'] < rval_excl),
+        (ret_result['pvals'] > pval_excl),
+    ])
+    is_center_cell = ~exclusions & is_center_cell
+    is_surr_cell = ~exclusions & ~is_center_cell

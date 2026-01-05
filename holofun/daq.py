@@ -236,7 +236,7 @@ class SetupDaqFile:
                         is_found == True
                         c=1
                         raise ValueError('Output not found')
-                output_string.append(int(all_output_names[c].split('.')[0][-1]))
+                output_string.append(int(all_output_names[c].split('.')[0][-1])) # BAD!!
                 output_name.append(all_output_names[c])
                 output_num.append(int(c))
                 # print(f'added stim {s}/{unique_stims.size}')

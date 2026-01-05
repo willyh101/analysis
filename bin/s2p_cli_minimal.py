@@ -1,0 +1,153 @@
+#!/usr/bin/env python
+
+import argparse
+from pathlib import Path
+from glob import glob
+from datetime import datetime
+import yaml
+from suite2p import run_s2p
+
+
+TIFF_BASE = '/mnt/hdd/data2/experiments'
+RESULT_BASE = '/mnt/nvme/data'
+DEFAULT_OPS = 'default_ops'
+DEFAULT_DEST_FOLDER = 'suite2p_outputs'
+
+from si_tiff import SItiffCore
+import s2p_ops
+
+
+##--- handle args ---##
+parser = argparse.ArgumentParser(description='Run Suite2p!')
+parser.add_argument('mouse', type=str)
+parser.add_argument('date', type=str)
+parser.add_argument('--dest', type=str,
+                    help="name of folder to save into. will be create if it doesn't exist",
+                    default=DEFAULT_DEST_FOLDER, dest='dest')
+parser.add_argument('--resultbase', 
+                    help='result base folder location',
+                    default=RESULT_BASE, dest='result_path')
+parser.add_argument('--tiffbase', 
+                    help='tiff base folder location',
+                    default=TIFF_BASE, dest='tiff_loc')
+parser.add_argument('--ops',
+                    type=str,
+                    help='which ops to use',
+                    default=DEFAULT_OPS, dest='ops_dict')
+
+args = parser.parse_args()
+
+##--- make paths ---##
+result_base = Path(args.result_path, args.dest)
+tiff_base = args.tiff_loc
+
+art = """
+    __QQ
+   (_)_">
+  _)      
+
+Process new experiment with suite2p!
+"""
+print(art)
+print(f'\nYour save path will be: {result_base}\n')
+
+expt_path = Path(args.tiff_loc, args.mouse, args.date)
+root_data = [f for f in expt_path.iterdir()]
+pth = sorted([f for f in root_data if f.is_dir()])
+
+# do prompt
+while True:
+    print(f'Looking in: {expt_path}\n')
+    print('Type the number of the epochs to keep with spaces in between. (use 1-based indexing)')
+    print('Or type "a" to keep all epochs.')
+    print(f'(eg. -> 1 2 5 6)\n')
+    
+
+    for i,p in enumerate(pth):
+        # print(f'{i}: {p.stem}')
+        print(f'{i+1}: {p.stem}')
+
+    epoch_input = input('-> ')
+    if epoch_input == '':
+        print('You must choose at least one epoch!')
+        continue
+    elif epoch_input == 'a':
+        epoch_idxs = list(range(len(pth)))
+    else:
+        epoch_list = epoch_input.split(' ')
+        # epoch_idxs = [int(e) for e in epoch_list]
+        epoch_idxs = [int(e)-1 for e in epoch_list]
+
+    print('\nYou chose these epochs?')
+    print('-------------------------')
+    chosen_epochs = [pth[i] for i in epoch_idxs]
+    for e in chosen_epochs:
+        print(e)
+
+    ans = input('(y/n): ')
+    if ans == 'y':
+        break
+    elif ans == 'n':
+        print('\nOK, try again... (press ctrl-C to exit)')
+        continue
+    else:
+        print('not an acceptable input! (press ctrl-C to exit)')
+
+epoch_folders = [pth[i] for i in epoch_idxs]
+epoch_names = [Path(epoch).stem for epoch in epoch_folders]
+mouse = args.mouse
+date = args.date
+data_path = [str(Path(tiff_base, mouse, date, lbl)) for lbl in epoch_names]
+save_path = str(Path(result_base, mouse, date, '_'.join(epoch_names)))
+
+
+# append notes
+notes = input('\nNotes: ')
+
+# load ops
+try:
+    ops = getattr(s2p_ops, args.ops_dict)
+except AttributeError:
+    raise AttributeError(f'No ops dict named {args.ops_dict} in s2p_ops.py')
+
+# get datetime for run
+now = datetime.now()
+dt = now.strftime("%Y%m%d_%H%M%S")
+dt_nice_fmt = now.strftime("%Y-%m-%d %H:%M:%S")
+
+# save everything into a record file
+db_out = {
+    'run_time': dt_nice_fmt,
+    'mouse': mouse,
+    'date': date,
+    'epochs': epoch_names,
+    'result_folder': args.dest,
+    'data_path': data_path,
+    'save_path': save_path,
+    'notes': notes,
+    'ops_dict_used': args.ops_dict,
+    'user_ops': ops
+}
+
+save_locs = [
+    Path(save_path, 'suite2p', 'cli_params.yml')
+]
+
+for sv in save_locs:
+    sv.parent.mkdir(parents=True, exist_ok=True)
+    with open(sv, 'w') as f:
+        yaml.dump(db_out, f, default_flow_style=False)
+
+# setup s2p db
+tmp_tiff = SItiffCore(glob(data_path[0]+'/*.tif')[0])
+db = {
+    'save_path0': save_path,
+    'data_path': data_path,
+    'nchannels': tmp_tiff.nchannels,
+    'nplanes': tmp_tiff.nplanes,
+    'fs': tmp_tiff.fr
+}
+
+print('Starting suite2p...')
+run_s2p(ops=ops, db=db)
+print('suite2p finished.')

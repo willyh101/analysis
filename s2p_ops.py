@@ -27,7 +27,7 @@ default_ops = {
     'sparse_mode': True,
     'max_iterations': 20, # usualy stops at threshold scaling, default 20
     'high_pass': 50,  # running mean subtraction with window of size 'high_pass' (use low values for 1P), default 100
-    'classifier_path': '/home/will/code/suite2p/suite2p/classifiers/classifier.npy',
+    # 'classifier_path': '/home/will/code/suite2p/suite2p/classifiers/classifier.npy',
     'max_overlap': 0.5,  # cells with more overlap than this get removed during triage, before refinement
     'nbinned': 10000,  # number of binned frames for cell detection, default: 5000
     'spatial_scale': 2,  # spatial scale of the data, depends on microscope, 1 (=6 pixels), 2 (=12 pixels), 3 (=24 pixels), or 4 (=48 pixels)
@@ -41,7 +41,7 @@ default_ops = {
     'neucoeff': 0.7,  # neuropil coefficient
     
     # custom settings
-    'remove_artifacts': (25, 512-25)
+    # 'remove_artifacts': (25, 512-25)
 }
 
 _ops_8m_mods = {

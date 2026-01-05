@@ -19,11 +19,11 @@ print('loading file...')
 tiff = SItiff(file)
 
 all_pts = []
-for p in tiff.zs:
+for p,z_depth in enumerate(tiff.zs):
     img_data = tiff.mean_img(p, ch, scaling=scaling, as_rgb=do_rgb)
     fig, ax = plt.subplots(figsize=(5,5))
     im = ax.imshow(img_data, cmap=cmap)
-    ax.set_title(f'Click the cells. (z = {p})')
+    ax.set_title(f'Click the cells. (z = {z_depth})')
     im_min = 0
     im_max = img_data.max()
     pts = fig.ginput(n=-1, timeout=-1)

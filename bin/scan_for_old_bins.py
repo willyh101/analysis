@@ -11,7 +11,8 @@ MODE = 'delete' # 'delete' or 'move'
 
 # Define the path to the parent directory containing the old binaries
 # search_dir = '/mnt/nvme/data/suite2p_outputs'
-search_dir = '/mnt/nvme/localdata'
+# search_dir = '/mnt/nvme/localdata'
+search_dir = '/mnt/nvme/scratch'
 
 # How many days old should the binaries be to be considered old?
 days_old = 10
